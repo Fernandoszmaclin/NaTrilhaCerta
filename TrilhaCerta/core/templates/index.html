@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Estilos específicos da Homepage */
+    .hero-section {
+        position: relative;
+        height: 85vh;
+        min-height: 600px;
+        background-image: url('{% static "img/hero_banner.png" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        margin-top: -85px;
+        /* Compensa o padding do main */
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(17, 17, 17, 0.9) 0%, rgba(17, 17, 17, 0.5) 100%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 0 15px;
+    }
+
+    .hero-title {
+        font-size: 4.5rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        line-height: 1.1;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-subtitle {
+        font-size: 1.4rem;
+        color: var(--texto-claro);
+        max-width: 600px;
+        margin-bottom: 40px;
+        font-weight: 400;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Seção Diferenciais */
+    .features-section {
+        background-color: var(--cor-cinza-escuro);
+        padding: 60px 0;
+        border-bottom: 1px solid var(--cor-cinza);
+    }
+
+    .feature-box {
+        text-align: center;
+        padding: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-box:hover {
+        transform: translateY(-10px);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(45deg, var(--cor-primaria), #ff3300);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 20px rgba(255, 106, 0, 0.3);
+    }
+
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    /* Expedições Cards */
+    .expedicao-card {
+        background-color: var(--cor-cinza-escuro);
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .expedicao-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .expedicao-img-wrapper {
+        position: relative;
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .expedicao-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .expedicao-card:hover .expedicao-img {
+        transform: scale(1.1);
+    }
+
+    .badge-status {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: var(--cor-primaria);
+        color: white;
+        padding: 5px 15px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 3px;
+    }
+
+    .expedicao-body {
+        padding: 30px;
+        position: relative;
+    }
+
+    .expedicao-titulo {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 15px;
+    }
+
+    .expedicao-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        color: var(--texto-muted);
+        font-size: 0.9rem;
+    }
+
+    .expedicao-info i {
+        color: var(--cor-secundaria);
+        margin-right: 10px;
+    }
+
+    /* Seção Sobre */
+    .sobre-section {
+        background-color: var(--cor-escura);
+        position: relative;
+    }
+
+    .sobre-img {
+        border-radius: 10px;
+        box-shadow: 20px 20px 0px rgba(255, 106, 0, 0.2);
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(rgba(17, 17, 17, 0.8), rgba(17, 17, 17, 0.8)),
+        url('{% static "img/expedicao_rio.png" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        text-align: center;
+        padding: 120px 0;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .hero-section {
+            background-attachment: scroll;
+            /* Fixa bug ios parallax */
+        }
+
+        .cta-section {
+            background-attachment: scroll;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="hero-title text-white">
+                    VERDADEIRO <span style="color: var(--cor-secundaria);">OFF-ROAD</span><br>
+                    <span style="color: var(--cor-primaria);">PRA QUEM TEM CORAGEM</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Expedições exclusivas por montanhas, florestas e rios do Brasil e América do Sul. A união
+                    perfeita entre adrenalina extrema, segurança profissional e visuais inesquecíveis.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#proximas" class="btn btn-primario btn-lg">PRÓXIMAS SAÍDAS <i
+                            class="bi bi-arrow-right ms-2"></i></a>
+                    <a href="#sobre" class="btn btn-outline-amarelo btn-lg">A EMPRESA</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Diferenciais -->
+<section class="features-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <h4 class="feature-title">Segurança 100%</h4>
+                    <p class="text-muted small mb-0">Equipe de resgate e mecânicos experientes acompanhando.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="bi bi-signpost-split"></i></div>
+                    <h4 class="feature-title">Trilhas Inéditas</h4>
+                    <p class="text-muted small mb-0">Roteiros mapeados exclusivamente para enduro e Big Trail.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="bi bi-truck"></i></div>
+                    <h4 class="feature-title">Carro de Apoio</h4>
+                    <p class="text-muted small mb-0">Sua bagagem e peças sobressalentes vão seguras conosco.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="bi bi-camera"></i></div>
+                    <h4 class="feature-title">Registro Épico</h4>
+                    <p class="text-muted small mb-0">Fotógrafo profissional registrando todos os seus saltos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Próximas Expedições -->
+<section id="proximas" class="section-padding" style="background-color: var(--cor-escura);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">NOSSAS <span>PRÓXIMAS SAÍDAS</span></h2>
+            <div class="title-divider center"></div>
+            <p class="text-muted">Acelere fundo nos melhores destinos nacionais e internacionais.</p>
+        </div>
+
+        <div class="row g-4 mt-2">
+            {% if expedicoes %}
+            <!-- Dinâmico do Banco -->
+            {% for exp in expedicoes %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card expedicao-card">
+                    <div class="expedicao-img-wrapper">
+                        {% if exp.imagem %}
+                        <img src="{{ exp.imagem.url }}" alt="{{ exp.titulo }}" class="expedicao-img">
+                        {% else %}
+                        <img src="{% static 'img/expedicao_canastra.png' %}" alt="{{ exp.titulo }}"
+                            class="expedicao-img">
+                        {% endif %}
+                        <div class="badge-status">ABERTAS</div>
+                    </div>
+                    <div class="expedicao-body">
+                        <h3 class="expedicao-titulo">{{ exp.titulo }}</h3>
+                        <div class="expedicao-info">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ exp.data_inicio|date:"d/m/y" }} a {{ exp.data_fim|date:"d/m/y" }}</span>
+                        </div>
+                        <div class="expedicao-info">
+                            <i class="bi bi-clock-history"></i>
+                            <span>{{ exp.duracao_dias }} Dias de Expedição</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">{{ exp.descricao }}</p>
+                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Conteúdo Estático (Placeholder enquanto BD está vazio) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card expedicao-card">
+                    <div class="expedicao-img-wrapper">
+                        <img src="{% static 'img/expedicao_canastra.png' %}" alt="Serra da Canastra"
+                            class="expedicao-img">
+                        <div class="badge-status">RESERVAS ABERTAS</div>
+                    </div>
+                    <div class="expedicao-body">
+                        <h3 class="expedicao-titulo">Serra da Canastra Exclusiva</h3>
+                        <div class="expedicao-info">
+                            <i class="bi bi-calendar3"></i>
+                            <span>24/11/2026 a 28/11/2026</span>
+                        </div>
+                        <div class="expedicao-info">
+                            <i class="bi bi-clock-history"></i>
+                            <span>4 Dias de Expedição</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Subida pela rocha da Cachoeira Casca
+                            D'Anta, estradas de terra virgens e degustação do autêntico queijo canastra.</p>
+                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="card expedicao-card">
+                    <div class="expedicao-img-wrapper">
+                        <img src="{% static 'img/expedicao_floresta.png' %}" alt="Trilha da Lama" class="expedicao-img">
+                        <div class="badge-status">RESERVAS ABERTAS</div>
+                    </div>
+                    <div class="expedicao-body">
+                        <h3 class="expedicao-titulo">Expedição Mata Atlântica</h3>
+                        <div class="expedicao-info">
+                            <i class="bi bi-calendar3"></i>
+                            <span>05/12/2026 a 07/12/2026</span>
+                        </div>
+                        <div class="expedicao-info">
+                            <i class="bi bi-clock-history"></i>
+                            <span>3 Dias de Expedição</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Hard enduro na floresta tropical mais
+                            desafiadora do mundo. Raízes, subidas íngremes e lama técnica para pilotos testados.</p>
+                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="card expedicao-card">
+                    <div class="expedicao-img-wrapper">
+                        <img src="{% static 'img/expedicao_rio.png' %}" alt="Travessia Aquática" class="expedicao-img">
+                        <div class="badge-status" style="background-color: var(--cor-cinza);">ESGOTADO</div>
+                    </div>
+                    <div class="expedicao-body">
+                        <h3 class="expedicao-titulo">Travessia Pantaneira</h3>
+                        <div class="expedicao-info">
+                            <i class="bi bi-calendar3"></i>
+                            <span>15/01/2027 a 22/01/2027</span>
+                        </div>
+                        <div class="expedicao-info">
+                            <i class="bi bi-clock-history"></i>
+                            <span>7 Dias de Expedição</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Sete dias atravessando regiões
+                            alagadas e rios secos no maior bioma pantanoso do planeta, cruzando fronteiras e limites.
+                        </p>
+                        <button disabled class="btn btn-outline-secondary w-100"
+                            style="border: 2px solid var(--cor-cinza); opacity: 0.7;">LISTA DE ESPERA</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="#" class="btn btn-outline-amarelo px-5">VER CALENDÁRIO COMPLETO</a>
+        </div>
+    </div>
+</section>
+
+<!-- Quem Somos -->
+<section id="sobre" class="section-padding sobre-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <img src="{% static 'img/expedicao_canastra.png' %}" alt="Equipe Na Trilha Certa"
+                    class="img-fluid sobre-img">
+            </div>
+            <div class="col-lg-5 offset-lg-1">
+                <h2 class="section-title">UMA VIVÊNCIA <span>PARA SEMPRE</span></h2>
+                <div class="title-divider"></div>
+
+                <p class="lead fw-bold text-white mb-4">A Na Trilha Certa é uma operadora profissional de turismo focada
+                    única e exclusivamente em motocicletas off-road.</p>
+
+                <p class="text-muted mb-4">Nascemos da poeira. Formulados e operados por pilotos que entendem que
+                    aventura sem segurança é só risco, promovemos passeios guiados, expedições intensas de vários dias
+                    em diversos terrenos pelo Brasil afora e treinamentos táticos.</p>
+
+                <ul class="list-unstyled text-white mb-5">
+                    <li class="mb-3 d-flex align-items-center"><i
+                            class="bi bi-check-square-fill me-3 text-warning fs-5"></i> Mais de 50 expedições
+                        realizadas.</li>
+                    <li class="mb-3 d-flex align-items-center"><i
+                            class="bi bi-check-square-fill me-3 text-warning fs-5"></i> Guias registrados no Ministério
+                        do Turismo.</li>
+                    <li class="mb-3 d-flex align-items-center"><i
+                            class="bi bi-check-square-fill me-3 text-warning fs-5"></i> Especialistas em montanha, areia
+                        e travessias fluidas.</li>
+                </ul>
+
+                <a href="#" class="btn btn-primario">CONHEÇA A EQUIPE COMPLETA</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA / Garantia -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="text-white fw-bold mb-4" style="font-size: 3rem; text-shadow: 2px 2px 5px rgba(0,0,0,0.8);">
+                    MOTO PRONTA. EQUIPE A POSTOS. ONDE VOCÊ QUER ACELERAR?</h2>
+                <p class="text-white mb-5 fs-5">A vida é curta demais para andar só em asfalto. Reserve seu lugar agora
+                    mesmo em nossas próximas saídas com atendimento via WhatsApp.</p>
+                <a href="#" class="btn btn-primario btn-lg px-5 py-3 fs-4 rounded-pill">
+                    <i class="bi bi-whatsapp me-2"></i> FALAR COM O ATENDIMENTO
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
