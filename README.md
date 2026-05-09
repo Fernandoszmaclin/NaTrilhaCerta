@@ -1,120 +1,49 @@
-# NaTrilhaCerta - Plataforma de Ecoturismo
+# NaTrilhaCerta 🌲
 
-![Logo da NaTrilhaCerta](https://raw.githubusercontent.com/placeholder-logo.png) <!-- Substituir pela URL real da logo se houver -->
+**Transformando trilhas em experiências inesquecíveis.**
 
-Bem-vindo ao **NaTrilhaCerta**, uma plataforma completa desenvolvida em Django para gestão e reserva de expedições de ecoturismo, trilhas e viagens de aventura.
-
-## 📖 Sobre o Projeto
-
-O site permite que entusiastas de aventura explorem pacotes de viagens, consultem detalhes sobre destinos, verifiquem a dificuldade de cada trilha e realizem reservas online. 
-
-### Principais Funcionalidades:
-- **Catálogo de Expedições:** Lista dinâmica de viagens com filtros por preço, data e local.
-- **Sistema de Reservas:** Registro de interesse em expedições diretamente pelo site.
-- **Área Administrativa:** Gestão completa de pacotes, imagens, usuários e reservas via Django Admin.
-- **Autenticação:** Sistema de login e cadastro para usuários.
-- **Filtros Avançados:** Busca por nível de dificuldade, datas mais próximas e valores.
+O **NaTrilhaCerta** é uma plataforma de gestão de ecoturismo desenvolvida para facilitar o encontro entre aventureiros e expedições. O foco do sistema é oferecer uma experiência fluida de descoberta e reserva de viagens, enquanto fornece ferramentas robustas para o gerenciamento de pacotes turísticos.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## ✨ Funcionalidades Principais
 
-- **Linguagem:** Python 3.14+
-- **Framework Web:** [Django 6.0](https://www.djangoproject.com/)
-- **Banco de Dados:** PostgreSQL (Configurado para produção/desenvolvimento)
-- **Frontend:** HTML5, CSS3, JavaScript e Bootstrap 5
-- **Gestão de Formulários:** Django Crispy Forms
-- **Processamento de Imagens:** Pillow
+O sistema é dividido em dois grandes eixos: a experiência do usuário (cliente) e o painel de controle (administrativo).
 
----
+### 🖥️ Para o Viajante (Cliente)
+- **Catálogo Inteligente:** Navegação por cards visuais que destacam o destino, a data e o valor da aventura.
+- **Filtros Dinâmicos:** Busca personalizada por preço (maior/menor), destino (por estado) e proximidade de data.
+- **Detalhes da Expedição:** Informações completas sobre o roteiro, nível de dificuldade (Fácil a Extremo), vagas disponíveis e galeria de fotos.
+- **Sistema de Reservas:** Botão "Reservar Agora" que valida se o usuário está logado. Se estiver, direciona para o contato direto; se não, abre um fluxo rápido de login/cadastro.
+- **Perfil do Usuário:** Área segura para cadastro e login, garantindo que cada aventureiro tenha seus dados salvos para futuras trilhas.
 
-## 🚀 Como Rodar o Projeto
-
-Siga os passos abaixo para configurar o ambiente de desenvolvimento localmente.
-
-### 1. Pré-requisitos
-Certifique-se de ter instalado em sua máquina:
-- Python (Versão 3.14 recomendada)
-- PostgreSQL
-- Git
-
-### 2. Clonar o Repositório
-```bash
-git clone https://github.com/seu-usuario/Turismo.git
-cd NaTrilhaCerta
-```
-
-### 3. Configurar o Ambiente Virtual
-```bash
-# Criar o ambiente virtual
-python -m venv .venv
-
-# Ativar o ambiente (Windows)
-.venv\Scripts\activate
-
-# Ativar o ambiente (Linux/Mac)
-source .venv/bin/activate
-```
-
-### 4. Instalar as Dependências
-Como o projeto utiliza `Pipfile`, você pode instalar via `pipenv` ou usar o `pip`:
-```bash
-pip install django django-crispy-forms crispy-bootstrap5 psycopg2-binary pillow
-```
-
-### 5. Configurar o Banco de Dados
-O projeto está configurado para utilizar **PostgreSQL**. Certifique-se de configurar seu banco de dados local ou ambiente e atualizar as configurações no arquivo `TrilhaCerta/settings.py` (ou utilize variáveis de ambiente).
-
-Os parâmetros necessários incluem:
-- Nome do Banco de Dados
-- Usuário
-- Senha
-- Host e Porta
-
-
-### 6. Executar Migrações
-Com o banco configurado e ativo, execute:
-```bash
-cd TrilhaCerta
-python manage.py migrate
-```
-
-### 7. Criar um Superusuário (Admin)
-Para acessar o painel de controle e cadastrar as expedições:
-```bash
-python manage.py createsuperuser
-```
-
-### 8. Iniciar o Servidor
-```bash
-python manage.py runserver
-```
-O site estará disponível em: `http://127.0.0.1:8000/`
+### ⚙️ Para a Gestão (Administrativo)
+- **Painel de Controle:** Gestão completa via Django Admin para adicionar, editar ou remover expedições em tempo real.
+- **Controle de Vagas:** Atualização automática da disponibilidade; expedições sem vagas são marcadas visualmente como "Esgotadas".
+- **Gestão de Mídia:** Upload simplificado de múltiplas fotos para cada destino.
+- **Acompanhamento de Reservas:** Lista organizada de todos os usuários que demonstraram interesse em cada pacote.
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🛠️ Tecnologias de Base
 
-- `core/`: Aplicativo principal contendo modelos, views e templates.
-- `media/`: Diretório para upload das imagens das expedições.
-- `static/`: Arquivos estáticos (CSS, JS, Imagens do layout).
-- `TrilhaCerta/`: Configurações globais do projeto Django.
-
----
-
-## 🤝 Contribuição
-
-1. Faça um Fork do projeto.
-2. Crie uma Branch para sua feature (`git checkout -b feature/NovaFeature`).
-3. Comite suas mudanças (`git commit -m 'Adicionando nova feature'`).
-4. Push para a Branch (`git push origin feature/NovaFeature`).
-5. Abra um Pull Request.
+O projeto utiliza tecnologias modernas para garantir estabilidade e performance:
+- **Backend:** Python com o framework Django 6.
+- **Banco de Dados:** PostgreSQL para armazenamento seguro e relacional.
+- **Interface:** HTML5, CSS3 (Vanilla) e JavaScript, potencializados com Bootstrap 5 para total responsividade.
 
 ---
 
-## 📄 Licença
+## 🚀 Como Preparar o Ambiente de Desenvolvimento
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Caso precise rodar o projeto localmente para testes:
+
+1. **Baixe o Código:** Clone o repositório em sua máquina.
+2. **Ambiente Virtual:** Crie e ative um ambiente `.venv`.
+3. **Dependências:** Instale os requisitos com `pip install django django-crispy-forms crispy-bootstrap5 psycopg2-binary pillow`.
+4. **Banco de Dados:** Configure uma instância local do PostgreSQL e atualize o `settings.py`.
+5. **Migrações e Admin:** Execute `python manage.py migrate` e crie seu acesso com `python manage.py createsuperuser`.
+6. **Execução:** Rode `python manage.py runserver` e acesse `localhost:8000`.
 
 ---
-*Desenvolvido por Fernando Sozo Marcolin*
+*Este é um projeto proprietário desenvolvido por **Fernando Sozo Marcolin***.
