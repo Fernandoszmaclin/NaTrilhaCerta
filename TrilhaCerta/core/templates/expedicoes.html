@@ -6,7 +6,9 @@
     .page-header {
         background: linear-gradient(rgba(17,17,17,0.85), rgba(17,17,17,0.85)),
             url('{% static "img/hero_banner.png" %}');
-        background-size: cover; background-position: center;
+        background-size: cover; background-position: center 45%;
+        image-rendering: high-quality;
+        image-rendering: -webkit-optimize-contrast;
         padding: 140px 0 80px; text-align: center; margin-top: -85px;
     }
     .page-header h1 { font-size: 3.5rem; font-weight: 900; text-transform: uppercase; }
@@ -152,8 +154,11 @@
                         </ul>
                     </div>
                 </div>
-                <div class="w-100 w-md-auto text-md-end">
-                    <button class="btn btn-sm filter-btn-disponivel w-100 w-md-auto" id="filterDisponivel">
+                <div class="w-100 w-md-auto text-md-end d-flex flex-wrap gap-2 justify-content-md-end mt-3 mt-md-0">
+                    <button class="btn btn-sm text-white" id="btnClearFilters" style="display: none; background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: all 0.3s;">
+                        <i class="bi bi-x-circle me-1"></i> Limpar Filtros
+                    </button>
+                    <button class="btn btn-sm filter-btn-disponivel w-100 w-md-auto flex-grow-1 flex-md-grow-0" id="filterDisponivel">
                         <i class="bi bi-circle me-1"></i> Somente Disponíveis
                     </button>
                 </div>
@@ -169,17 +174,39 @@
                  data-esgotada="{{ exp.esgotada|yesno:'true,false' }}">
                 <div class="exp-card{% if exp.esgotada %} esgotado-card{% endif %}">
                     <div class="exp-card-img">
-                        {% if exp.imagem %}
-                        <img src="{{ exp.imagem.url }}" alt="{{ exp.titulo }}">
-                        {% else %}
-                        <img src="{% static 'img/expedicao_canastra.png' %}" alt="{{ exp.titulo }}">
-                        {% endif %}
+                        <div id="carousel-exp-{{ exp.id }}" class="carousel slide h-100" data-bs-ride="false">
+                            <div class="carousel-inner h-100">
+                                <div class="carousel-item active h-100">
+                                    <img src="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                </div>
+                                {% if exp.imagem_2 %}
+                                <div class="carousel-item h-100">
+                                    <img src="{{ exp.imagem_2.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                </div>
+                                {% endif %}
+                                {% if exp.imagem_3 %}
+                                <div class="carousel-item h-100">
+                                    <img src="{{ exp.imagem_3.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if exp.imagem_2 or exp.imagem_3 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-exp-{{ exp.id }}" data-bs-slide="prev" style="z-index: 3;">
+                                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.8));"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-exp-{{ exp.id }}" data-bs-slide="next" style="z-index: 3;">
+                                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.8));"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                            {% endif %}
+                        </div>
                         {% if exp.esgotada %}
-                        <span class="exp-badge esgotada">ESGOTADO</span>
+                        <span class="exp-badge esgotada" style="z-index: 2;">ESGOTADO</span>
                         {% else %}
-                        <span class="exp-badge aberta">RESERVAS ABERTAS</span>
+                        <span class="exp-badge aberta" style="z-index: 2;">RESERVAS ABERTAS</span>
                         {% endif %}
-                        <div class="exp-price">
+                        <div class="exp-price" style="z-index: 2;">
                             R$ {{ exp.preco|floatformat:2 }}
                             <small>/pessoa</small>
                         </div>
@@ -221,6 +248,8 @@
                                 data-dificuldade="{{ exp.get_dificuldade_display }}"
                                 data-vagas="{{ exp.vagas }}"
                                 data-imagem="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}"
+                                data-imagem2="{% if exp.imagem_2 %}{{ exp.imagem_2.url }}{% endif %}"
+                                data-imagem3="{% if exp.imagem_3 %}{{ exp.imagem_3.url }}{% endif %}"
                             >RESERVAR AGORA</button>
                             {% endif %}
                         </div>
@@ -245,8 +274,19 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="detail-hero">
-                <img id="detailImg" src="" alt="">
-                <div class="detail-hero-overlay">
+                <div id="modalCarouselExp" class="carousel slide h-100" data-bs-ride="carousel">
+                    <div class="carousel-inner h-100" id="detailCarouselInner">
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#modalCarouselExp" data-bs-slide="prev" id="modalCarouselPrev" style="z-index: 4;">
+                        <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: drop-shadow(0px 0px 4px rgba(0,0,0,0.8));"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#modalCarouselExp" data-bs-slide="next" id="modalCarouselNext" style="z-index: 4;">
+                        <span class="carousel-control-next-icon" aria-hidden="true" style="filter: drop-shadow(0px 0px 4px rgba(0,0,0,0.8));"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+                <div class="detail-hero-overlay" style="z-index: 3;">
                     <h3 id="detailTitle"></h3>
                 </div>
                 <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal"></button>
@@ -296,7 +336,24 @@
     document.querySelectorAll('.btn-reservar-agora').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            document.getElementById('detailImg').src = this.dataset.imagem;
+            let img1 = this.dataset.imagem;
+            let img2 = this.dataset.imagem2;
+            let img3 = this.dataset.imagem3;
+            
+            let innerHtml = `<div class="carousel-item active h-100"><img src="${img1}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
+            if(img2) innerHtml += `<div class="carousel-item h-100"><img src="${img2}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
+            if(img3) innerHtml += `<div class="carousel-item h-100"><img src="${img3}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
+            
+            document.getElementById('detailCarouselInner').innerHTML = innerHtml;
+            
+            if(img2 || img3) {
+                document.getElementById('modalCarouselPrev').style.display = 'block';
+                document.getElementById('modalCarouselNext').style.display = 'block';
+            } else {
+                document.getElementById('modalCarouselPrev').style.display = 'none';
+                document.getElementById('modalCarouselNext').style.display = 'none';
+            }
+
             document.getElementById('detailTitle').textContent = this.dataset.titulo;
             document.getElementById('detailDestino').textContent = this.dataset.destino;
             document.getElementById('detailDatas').textContent = this.dataset.inicio + ' a ' + this.dataset.fim;
@@ -343,10 +400,51 @@
         const filterBtn = document.getElementById('filterDisponivel');
         const estadoList = document.getElementById('estadoFilterList');
         const estadoBtn = document.getElementById('estadoDropdownBtn');
+        const btnClearFilters = document.getElementById('btnClearFilters');
         
         let currentSort = 'data_asc';
         let filterAvailable = false;
         let currentEstado = 'todos';
+
+        function checkFiltersState() {
+            if (currentSort !== 'data_asc' || filterAvailable || currentEstado !== 'todos') {
+                btnClearFilters.style.display = 'inline-block';
+            } else {
+                btnClearFilters.style.display = 'none';
+            }
+        }
+
+        btnClearFilters.addEventListener('click', function() {
+            currentSort = 'data_asc';
+            filterAvailable = false;
+            currentEstado = 'todos';
+            
+            document.querySelectorAll('.sort-action').forEach(b => {
+                b.classList.remove('active');
+                if(b.dataset.sort === 'data_asc') b.classList.add('active');
+            });
+            document.querySelectorAll('.filter-bar .dropdown .sort-btn').forEach(b => b.classList.remove('active'));
+            let activeSortBtn = document.querySelector('[data-sort="data_asc"]').closest('.dropdown').querySelector('.sort-btn');
+            if (activeSortBtn) activeSortBtn.classList.add('active');
+
+            filterBtn.classList.remove('active');
+            filterBtn.innerHTML = '<i class="bi bi-circle me-1"></i> Somente Disponíveis';
+
+            document.querySelectorAll('.filter-estado').forEach(b => {
+                b.classList.remove('active');
+                if(b.dataset.estado === 'todos') b.classList.add('active');
+            });
+            estadoBtn.textContent = 'Todos';
+
+            checkFiltersState();
+
+            grid.style.opacity = 0;
+            setTimeout(() => {
+                renderGrid();
+                grid.style.opacity = 1;
+                grid.style.transition = 'opacity 0.4s ease';
+            }, 200);
+        });
 
         // Popula estados
         const estadosSet = new Set();
@@ -421,6 +519,7 @@
                 this.closest('.dropdown').querySelector('.sort-btn').classList.add('active');
 
                 currentSort = this.dataset.sort;
+                checkFiltersState();
                 
                 // Animação suave no grid
                 grid.style.opacity = 0;
@@ -442,6 +541,8 @@
                 currentEstado = e.target.dataset.estado;
                 estadoBtn.textContent = e.target.textContent;
                 
+                checkFiltersState();
+                
                 grid.style.opacity = 0;
                 setTimeout(() => {
                     renderGrid();
@@ -462,6 +563,8 @@
             }
             
             // Animação suave no grid
+            checkFiltersState();
+            
             grid.style.opacity = 0;
             setTimeout(() => {
                 renderGrid();
