@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .contato-header {
+        background: linear-gradient(rgba(17,17,17,0.88), rgba(17,17,17,0.88)),
+            url('{% static "img/hero_banner.png" %}');
+        background-size: cover; background-position: center;
+        padding: 140px 0 80px; text-align: center; margin-top: -85px;
+    }
+    .contato-header h1 { font-size: 3.5rem; font-weight: 900; text-transform: uppercase; }
+    .contato-header h1 span { color: var(--cor-primaria); }
+
+    .contato-card {
+        background: var(--cor-cinza-escuro); border: 1px solid var(--cor-cinza);
+        border-radius: 16px; padding: 40px; text-align: center;
+        transition: all 0.4s ease; height: 100%;
+    }
+    .contato-card:hover { transform: translateY(-8px); border-color: var(--cor-primaria); box-shadow: 0 15px 40px rgba(255,106,0,0.15); }
+    .contato-card-icon {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: linear-gradient(45deg, var(--cor-primaria), #ff3300);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; font-size: 2rem; color: white;
+        box-shadow: 0 8px 25px rgba(255,106,0,0.3);
+    }
+    .contato-card h4 { color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 12px; text-transform: uppercase; }
+    .contato-card p { color: var(--texto-muted); font-size: 0.95rem; margin-bottom: 0; }
+    .contato-card a { color: var(--cor-secundaria); text-decoration: none; font-weight: 600; transition: color 0.3s; }
+    .contato-card a:hover { color: var(--cor-primaria); }
+
+    .map-container {
+        border-radius: 16px; overflow: hidden; border: 2px solid var(--cor-cinza);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+    .map-container iframe { display: block; }
+
+    .horario-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 0; border-bottom: 1px solid var(--cor-cinza);
+    }
+    .horario-item:last-child { border-bottom: none; }
+    .horario-item .dia { color: white; font-weight: 700; }
+    .horario-item .hora { color: var(--cor-secundaria); font-weight: 600; }
+
+    @media (max-width: 768px) {
+        .contato-header h1 { font-size: 2.2rem; }
+        .contato-header { padding: 120px 0 60px; }
+    }
+</style>
+
+<section class="contato-header">
+    <div class="container">
+        <h1 class="text-white">FALE <span>CONOSCO</span></h1>
+        <div class="title-divider center"></div>
+        <p class="text-light" style="max-width:600px; margin:0 auto; font-size:1.1rem;">
+            Entre em contato com a nossa equipe. Estamos prontos para planejar sua próxima aventura.
+        </p>
+    </div>
+</section>
+
+<section class="section-padding" style="background: var(--cor-escura);">
+    <div class="container">
+        <!-- Contact Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="contato-card">
+                    <div class="contato-card-icon"><i class="bi bi-whatsapp"></i></div>
+                    <h4>WhatsApp</h4>
+                    <p><a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank">(54) 9714-5614</a></p>
+                    <p class="mt-2 small" style="color:var(--texto-muted)">Atendimento rápido</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contato-card">
+                    <div class="contato-card-icon"><i class="bi bi-telephone-fill"></i></div>
+                    <h4>Telefone</h4>
+                    <p><a href="tel:+551198765-4321">(11) 98765-4321</a></p>
+                    <p class="mt-2 small" style="color:var(--texto-muted)">Seg a Sex, 9h - 18h</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contato-card">
+                    <div class="contato-card-icon"><i class="bi bi-envelope-fill"></i></div>
+                    <h4>E-mail</h4>
+                    <p><a href="mailto:aventura@natrilhacerta.com.br">aventura@natrilhacerta.com.br</a></p>
+                    <p class="mt-2 small" style="color:var(--texto-muted)">Respondemos em até 24h</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contato-card">
+                    <div class="contato-card-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h4>Endereço</h4>
+                    <p>Av. das Palmeiras, 1500</p>
+                    <p class="small" style="color:var(--texto-muted)">São Paulo - SP</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5 mt-3">
+            <!-- Map -->
+            <div class="col-lg-7">
+                <h3 class="text-white fw-bold mb-4" style="font-family:'Outfit',sans-serif; text-transform:uppercase;">
+                    <i class="bi bi-pin-map-fill me-2" style="color:var(--cor-primaria)"></i>Nossa Base Operacional
+                </h3>
+                <div class="map-container">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.0!2d-46.6558!3d-23.5505!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzAyLjAiUyA0NsKwMzknMjAuOSJX!5e0!3m2!1spt-BR!2sbr!4v1"
+                        width="100%" height="380" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Business Hours + Socials -->
+            <div class="col-lg-5">
+                <h3 class="text-white fw-bold mb-4" style="font-family:'Outfit',sans-serif; text-transform:uppercase;">
+                    <i class="bi bi-clock-fill me-2" style="color:var(--cor-primaria)"></i>Horários de Atendimento
+                </h3>
+                <div style="background:var(--cor-cinza-escuro); border:1px solid var(--cor-cinza); border-radius:16px; padding:30px;">
+                    <div class="horario-item"><span class="dia">Segunda a Sexta</span><span class="hora">09:00 - 18:00</span></div>
+                    <div class="horario-item"><span class="dia">Sábado</span><span class="hora">09:00 - 13:00</span></div>
+                    <div class="horario-item"><span class="dia">Domingo</span><span class="hora">Fechado</span></div>
+                    <div class="horario-item"><span class="dia">Feriados</span><span class="hora">Fechado</span></div>
+                </div>
+
+                <h3 class="text-white fw-bold mb-4 mt-5" style="font-family:'Outfit',sans-serif; text-transform:uppercase;">
+                    <i class="bi bi-share-fill me-2" style="color:var(--cor-primaria)"></i>Redes Sociais
+                </h3>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="https://www.instagram.com/trilhacertaturismo/" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-instagram fs-5"></i> Instagram
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61561486201708" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-facebook fs-5"></i> Facebook
+                    </a>
+                    <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-whatsapp fs-5"></i> WhatsApp
+                    </a>
+                    <a href="#" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-youtube fs-5"></i> YouTube
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

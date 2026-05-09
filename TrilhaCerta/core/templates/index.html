@@ -183,19 +183,42 @@
         padding: 120px 0;
     }
 
+    /* Detail Modal */
+    .detail-modal .modal-content {
+        background: rgba(26,26,26,0.98); border: 1px solid var(--cor-cinza);
+        border-radius: 16px; backdrop-filter: blur(20px); overflow: hidden;
+    }
+    .detail-hero { position: relative; height: 280px; overflow: hidden; }
+    .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-hero-overlay {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(26,26,26,0.95));
+        padding: 30px 30px 20px;
+    }
+    .detail-hero-overlay h3 { font-size: 1.6rem; font-weight: 800; color: white; margin: 0; }
+    .detail-body { padding: 24px 30px 30px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .detail-item {
+        background: var(--cor-cinza); border-radius: 10px; padding: 14px 16px;
+        display: flex; align-items: center; gap: 12px;
+    }
+    .detail-item i { font-size: 1.3rem; color: var(--cor-secundaria); }
+    .detail-item .detail-label { font-size: 0.7rem; color: var(--texto-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-item .detail-value { font-size: 0.95rem; color: white; font-weight: 600; }
+    .detail-desc { color: var(--texto-claro); font-size: 0.95rem; line-height: 1.7; margin-bottom: 24px; }
+    .detail-price-tag {
+        background: linear-gradient(45deg, var(--cor-primaria), #ff3300);
+        display: inline-block; padding: 8px 20px; border-radius: 8px;
+        color: white; font-weight: 800; font-size: 1.3rem; font-family: 'Outfit', sans-serif;
+    }
+    .detail-price-tag small { font-size: 0.7rem; font-weight: 400; opacity: 0.8; }
+
     @media (max-width: 768px) {
-        .hero-title {
-            font-size: 3rem;
-        }
-
-        .hero-section {
-            background-attachment: scroll;
-            /* Fixa bug ios parallax */
-        }
-
-        .cta-section {
-            background-attachment: scroll;
-        }
+        .hero-title { font-size: 3rem; }
+        .hero-section { background-attachment: scroll; }
+        .cta-section { background-attachment: scroll; }
+        .detail-grid { grid-template-columns: 1fr; }
+        .detail-hero { height: 200px; }
     }
 </style>
 
@@ -231,28 +254,28 @@
                 <div class="feature-box">
                     <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
                     <h4 class="feature-title">Segurança 100%</h4>
-                    <p class="text-muted small mb-0">Equipe de resgate e mecânicos experientes acompanhando.</p>
+                    <p class="text-light small mb-0">Equipe de resgate e mecânicos experientes acompanhando.</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="feature-box">
                     <div class="feature-icon"><i class="bi bi-signpost-split"></i></div>
                     <h4 class="feature-title">Trilhas Inéditas</h4>
-                    <p class="text-muted small mb-0">Roteiros mapeados exclusivamente para enduro e Big Trail.</p>
+                    <p class="text-light small mb-0">Roteiros mapeados exclusivamente para enduro e Big Trail.</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="feature-box">
                     <div class="feature-icon"><i class="bi bi-truck"></i></div>
                     <h4 class="feature-title">Carro de Apoio</h4>
-                    <p class="text-muted small mb-0">Sua bagagem e peças sobressalentes vão seguras conosco.</p>
+                    <p class="text-light small mb-0">Sua bagagem e peças sobressalentes vão seguras conosco.</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="feature-box">
                     <div class="feature-icon"><i class="bi bi-camera"></i></div>
                     <h4 class="feature-title">Registro Épico</h4>
-                    <p class="text-muted small mb-0">Fotógrafo profissional registrando todos os seus saltos.</p>
+                    <p class="text-light small mb-0">Fotógrafo profissional registrando todos os seus saltos.</p>
                 </div>
             </div>
         </div>
@@ -265,12 +288,11 @@
         <div class="text-center mb-5">
             <h2 class="section-title">NOSSAS <span>PRÓXIMAS SAÍDAS</span></h2>
             <div class="title-divider center"></div>
-            <p class="text-muted">Acelere fundo nos melhores destinos nacionais e internacionais.</p>
+            <p class="text-light">Acelere fundo nos melhores destinos nacionais e internacionais.</p>
         </div>
 
         <div class="row g-4 mt-2">
             {% if expedicoes %}
-            <!-- Dinâmico do Banco -->
             {% for exp in expedicoes %}
             <div class="col-lg-4 col-md-6">
                 <div class="card expedicao-card">
@@ -281,102 +303,56 @@
                         <img src="{% static 'img/expedicao_canastra.png' %}" alt="{{ exp.titulo }}"
                             class="expedicao-img">
                         {% endif %}
-                        <div class="badge-status">ABERTAS</div>
+                        {% if exp.esgotada %}
+                        <div class="badge-status" style="background-color: var(--cor-cinza);">ESGOTADO</div>
+                        {% else %}
+                        <div class="badge-status">RESERVAS ABERTAS</div>
+                        {% endif %}
                     </div>
                     <div class="expedicao-body">
                         <h3 class="expedicao-titulo">{{ exp.titulo }}</h3>
                         <div class="expedicao-info">
                             <i class="bi bi-calendar3"></i>
-                            <span>{{ exp.data_inicio|date:"d/m/y" }} a {{ exp.data_fim|date:"d/m/y" }}</span>
+                            <span>{{ exp.data_inicio|date:"d/m/Y" }} a {{ exp.data_fim|date:"d/m/Y" }}</span>
                         </div>
                         <div class="expedicao-info">
                             <i class="bi bi-clock-history"></i>
                             <span>{{ exp.duracao_dias }} Dias de Expedição</span>
                         </div>
-                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">{{ exp.descricao }}</p>
-                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
+                        <p class="text-light mt-3 mb-4" style="font-size: 0.9rem;">{{ exp.descricao }}</p>
+                        {% if exp.esgotada %}
+                        <button disabled class="btn btn-outline-secondary w-100"
+                            style="border: 2px solid var(--cor-cinza); opacity: 0.7;">LISTA DE ESPERA</button>
+                        {% else %}
+                        <button class="btn btn-outline-amarelo w-100 btn-saiba-mais"
+                            data-titulo="{{ exp.titulo }}"
+                            data-descricao="{{ exp.descricao_completa|default:exp.descricao }}"
+                            data-inicio="{{ exp.data_inicio|date:'d/m/Y' }}"
+                            data-fim="{{ exp.data_fim|date:'d/m/Y' }}"
+                            data-dias="{{ exp.duracao_dias }}"
+                            data-preco="{{ exp.preco|floatformat:2 }}"
+                            data-destino="{{ exp.destino|default:'A definir' }}"
+                            data-dificuldade="{{ exp.get_dificuldade_display }}"
+                            data-vagas="{{ exp.vagas }}"
+                            data-imagem="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}"
+                        >SAIBA MAIS</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <!-- Conteúdo Estático (Placeholder enquanto BD está vazio) -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card expedicao-card">
-                    <div class="expedicao-img-wrapper">
-                        <img src="{% static 'img/expedicao_canastra.png' %}" alt="Serra da Canastra"
-                            class="expedicao-img">
-                        <div class="badge-status">RESERVAS ABERTAS</div>
-                    </div>
-                    <div class="expedicao-body">
-                        <h3 class="expedicao-titulo">Serra da Canastra Exclusiva</h3>
-                        <div class="expedicao-info">
-                            <i class="bi bi-calendar3"></i>
-                            <span>24/11/2026 a 28/11/2026</span>
-                        </div>
-                        <div class="expedicao-info">
-                            <i class="bi bi-clock-history"></i>
-                            <span>4 Dias de Expedição</span>
-                        </div>
-                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Subida pela rocha da Cachoeira Casca
-                            D'Anta, estradas de terra virgens e degustação do autêntico queijo canastra.</p>
-                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card expedicao-card">
-                    <div class="expedicao-img-wrapper">
-                        <img src="{% static 'img/expedicao_floresta.png' %}" alt="Trilha da Lama" class="expedicao-img">
-                        <div class="badge-status">RESERVAS ABERTAS</div>
-                    </div>
-                    <div class="expedicao-body">
-                        <h3 class="expedicao-titulo">Expedição Mata Atlântica</h3>
-                        <div class="expedicao-info">
-                            <i class="bi bi-calendar3"></i>
-                            <span>05/12/2026 a 07/12/2026</span>
-                        </div>
-                        <div class="expedicao-info">
-                            <i class="bi bi-clock-history"></i>
-                            <span>3 Dias de Expedição</span>
-                        </div>
-                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Hard enduro na floresta tropical mais
-                            desafiadora do mundo. Raízes, subidas íngremes e lama técnica para pilotos testados.</p>
-                        <a href="#" class="btn btn-outline-amarelo w-100">SAIBA MAIS</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card expedicao-card">
-                    <div class="expedicao-img-wrapper">
-                        <img src="{% static 'img/expedicao_rio.png' %}" alt="Travessia Aquática" class="expedicao-img">
-                        <div class="badge-status" style="background-color: var(--cor-cinza);">ESGOTADO</div>
-                    </div>
-                    <div class="expedicao-body">
-                        <h3 class="expedicao-titulo">Travessia Pantaneira</h3>
-                        <div class="expedicao-info">
-                            <i class="bi bi-calendar3"></i>
-                            <span>15/01/2027 a 22/01/2027</span>
-                        </div>
-                        <div class="expedicao-info">
-                            <i class="bi bi-clock-history"></i>
-                            <span>7 Dias de Expedição</span>
-                        </div>
-                        <p class="text-muted mt-3 mb-4" style="font-size: 0.9rem;">Sete dias atravessando regiões
-                            alagadas e rios secos no maior bioma pantanoso do planeta, cruzando fronteiras e limites.
-                        </p>
-                        <button disabled class="btn btn-outline-secondary w-100"
-                            style="border: 2px solid var(--cor-cinza); opacity: 0.7;">LISTA DE ESPERA</button>
-                    </div>
-                </div>
+            <!-- Sem expedições cadastradas -->
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-compass d-block" style="font-size: 4rem; color: var(--cor-cinza); margin-bottom: 20px;"></i>
+                <h3 class="text-white mb-3">Novas aventuras em breve!</h3>
+                <p class="text-light">Estamos preparando roteiros incríveis. Fique ligado nas nossas redes sociais.</p>
             </div>
             {% endif %}
         </div>
 
         <div class="text-center mt-5">
-            <a href="#" class="btn btn-outline-amarelo px-5">VER CALENDÁRIO COMPLETO</a>
+            <a href="{% url 'expedicoes' %}" class="btn btn-outline-amarelo px-5">VER CALENDÁRIO COMPLETO</a>
         </div>
     </div>
 </section>
@@ -396,7 +372,7 @@
                 <p class="lead fw-bold text-white mb-4">A Na Trilha Certa é uma operadora profissional de turismo focada
                     única e exclusivamente em motocicletas off-road.</p>
 
-                <p class="text-muted mb-4">Nascemos da poeira. Formulados e operados por pilotos que entendem que
+                <p class="text-light mb-4">Nascemos da poeira. Formulados e operados por pilotos que entendem que
                     aventura sem segurança é só risco, promovemos passeios guiados, expedições intensas de vários dias
                     em diversos terrenos pelo Brasil afora e treinamentos táticos.</p>
 
@@ -427,11 +403,77 @@
                     MOTO PRONTA. EQUIPE A POSTOS. ONDE VOCÊ QUER ACELERAR?</h2>
                 <p class="text-white mb-5 fs-5">A vida é curta demais para andar só em asfalto. Reserve seu lugar agora
                     mesmo em nossas próximas saídas com atendimento via WhatsApp.</p>
-                <a href="#" class="btn btn-primario btn-lg px-5 py-3 fs-4 rounded-pill">
+                <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" class="btn btn-primario btn-lg px-5 py-3 fs-4 rounded-pill">
                     <i class="bi bi-whatsapp me-2"></i> FALAR COM O ATENDIMENTO
                 </a>
             </div>
         </div>
     </div>
 </section>
+<!-- Detail Modal -->
+<div class="modal fade detail-modal" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="detail-hero">
+                <img id="detailImg" src="" alt="">
+                <div class="detail-hero-overlay">
+                    <h3 id="detailTitle"></h3>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="detail-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div><div class="detail-label">Destino</div><div class="detail-value" id="detailDestino"></div></div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-calendar3"></i>
+                        <div><div class="detail-label">Período</div><div class="detail-value" id="detailDatas"></div></div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-clock-history"></i>
+                        <div><div class="detail-label">Duração</div><div class="detail-value" id="detailDias"></div></div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-speedometer2"></i>
+                        <div><div class="detail-label">Dificuldade</div><div class="detail-value" id="detailDif"></div></div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-people-fill"></i>
+                        <div><div class="detail-label">Vagas Restantes</div><div class="detail-value" id="detailVagas"></div></div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-tag-fill"></i>
+                        <div><div class="detail-label">Investimento</div><div class="detail-value" id="detailPreco"></div></div>
+                    </div>
+                </div>
+                <p class="detail-desc" id="detailDesc"></p>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" class="btn btn-primario px-4">
+                        <i class="bi bi-whatsapp me-2"></i>RESERVAR VIA WHATSAPP
+                    </a>
+                    <button class="btn btn-outline-amarelo px-4" data-bs-dismiss="modal">FECHAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.btn-saiba-mais').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.getElementById('detailImg').src = this.dataset.imagem;
+        document.getElementById('detailTitle').textContent = this.dataset.titulo;
+        document.getElementById('detailDestino').textContent = this.dataset.destino;
+        document.getElementById('detailDatas').textContent = this.dataset.inicio + ' a ' + this.dataset.fim;
+        document.getElementById('detailDias').textContent = this.dataset.dias + ' dias';
+        document.getElementById('detailDif').textContent = this.dataset.dificuldade;
+        document.getElementById('detailVagas').textContent = this.dataset.vagas + ' vagas';
+        document.getElementById('detailPreco').textContent = 'R$ ' + this.dataset.preco;
+        document.getElementById('detailDesc').textContent = this.dataset.descricao;
+        new bootstrap.Modal(document.getElementById('detailModal')).show();
+    });
+});
+</script>
 {% endblock %}
