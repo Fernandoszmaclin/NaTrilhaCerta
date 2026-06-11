@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .reserva-header {
+        background: linear-gradient(135deg, var(--cor-escura) 0%, #1a1a1a 100%);
+        padding: 120px 0 60px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .reserva-header h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 900;
+        font-size: 3rem;
+        color: white;
+    }
+    .reserva-header h1 span { color: var(--cor-primaria); }
+
+    .reserva-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .reserva-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        border-color: rgba(255,255,255,0.15);
+    }
+
+    .reserva-status {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .status-pendente { background: rgba(255,193,7,0.15); color: #ffca28; }
+    .status-confirmada { background: rgba(76,175,80,0.15); color: #66bb6a; }
+    .status-confirmada_e_pronta { background: rgba(0,188,212,0.15); color: #26c6da; }
+    .status-lista_espera { background: rgba(158,158,158,0.15); color: #bdbdbd; }
+    .status-cancelada { background: rgba(244,67,54,0.15); color: #ef5350; }
+    .status-concluida { background: rgba(156,39,176,0.15); color: #ab47bc; }
+
+    .reserva-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: white;
+        margin: 16px 0 8px;
+    }
+    .reserva-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--texto-muted);
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    .reserva-meta i { color: var(--cor-secundaria); }
+
+    .reserva-footer {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .reserva-price {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--cor-secundaria);
+    }
+    
+    .btn-cancelar {
+        background: transparent;
+        color: #ef5350;
+        border: 1px solid rgba(239,83,80,0.5);
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .btn-cancelar:hover {
+        background: rgba(239,83,80,0.1);
+        color: white;
+        border-color: #ef5350;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 0;
+    }
+    .empty-state i { font-size: 4rem; color: var(--cor-cinza); margin-bottom: 20px; }
+</style>
+
+<section class="reserva-header">
+    <div class="container">
+        <h1>MINHAS <span>RESERVAS</span></h1>
+        <p class="text-light">Acompanhe suas expedições, realize pagamentos pendentes ou gerencie cancelamentos.</p>
+    </div>
+</section>
+
+<section class="section-padding" style="background: var(--cor-escura); min-height: 50vh;">
+    <div class="container">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                {% if reservas %}
+                    {% for reserva in reservas %}
+                    <div class="reserva-card" id="reserva-{{ reserva.id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="reserva-status status-{{ reserva.status }}">{{ reserva.get_status_display }}</span>
+                            <span class="text-muted small">Reserva feita em {{ reserva.data_reserva|date:"d/m/Y" }}</span>
+                        </div>
+                        
+                        {% if reserva.status == 'confirmada' %}
+                        <div class="alert mt-3 mb-0" style="background: rgba(255,106,0,0.1); border: 1px solid var(--cor-primaria); color: white; border-radius: 8px;">
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                            <strong>Ação Obrigatória:</strong> Preencha a Ficha Médica para liberar sua expedição.
+                            <button class="btn btn-sm btn-primario mt-3 w-100 btn-abrir-ficha" data-id="{{ reserva.id }}">
+                                PREENCHER FICHA AGORA
+                            </button>
+                        </div>
+                        {% elif reserva.status == 'confirmada_e_pronta' %}
+                        <div class="alert mt-3 mb-0" style="background: rgba(76,175,80,0.1); border: 1px solid #4CAF50; color: white; border-radius: 8px;">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> Ficha Médica e Pagamentos OK! Tudo pronto para a aventura.
+                        </div>
+                        {% endif %}
+                        
+                        <h3 class="reserva-title">{{ reserva.expedicao.titulo }}</h3>
+                        
+                        <div class="reserva-meta">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ reserva.expedicao.data_inicio|date:"d/m/Y" }} a {{ reserva.expedicao.data_fim|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="reserva-meta">
+                            <i class="bi bi-people-fill"></i>
+                            <span>{{ reserva.quantidade_pessoas }} Pessoa(s)</span>
+                        </div>
+                        
+                        <div class="reserva-footer flex-column flex-md-row gap-3">
+                            <div class="reserva-price">
+                                R$ {{ reserva.valor_total|floatformat:2 }}
+                            </div>
+                            <div class="d-flex gap-2 w-100 w-md-auto">
+                                {% if reserva.status == 'pendente' %}
+                                <button class="btn btn-outline-amarelo flex-grow-1 flex-md-grow-0" disabled title="Em breve">Finalizar Pagamento</button>
+                                {% endif %}
+                                
+                                {% if reserva.status in 'pendente,confirmada,confirmada_e_pronta,lista_espera' %}
+                                <button class="btn btn-cancelar flex-grow-1 flex-md-grow-0 btn-cancelar-ação" data-id="{{ reserva.id }}" data-titulo="{{ reserva.expedicao.titulo }}">
+                                    Cancelar Reserva
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-journal-x"></i>
+                        <h3 class="text-white mb-3">Você ainda não tem reservas</h3>
+                        <p class="text-light mb-4">Escolha sua próxima aventura e comece a colecionar momentos!</p>
+                        <a href="{% url 'expedicoes' %}" class="btn btn-primario">VER EXPEDIÇÕES</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Cancelamento -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26,26,26,0.98); border: 1px solid #ef5350;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Cancelar Reserva</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-light">Tem certeza que deseja cancelar sua reserva para <strong id="cancelTitulo" class="text-white"></strong>?</p>
+                <p class="text-light small opacity-75">Se o pagamento já foi confirmado, o estorno será processado automaticamente para a conta de origem em até 7 dias úteis (conforme regras do CDC).</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Desistir</button>
+                <button type="button" class="btn btn-danger fw-bold" id="btnConfirmarCancelamento">Sim, Quero Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ficha Médica -->
+<div class="modal fade" id="fichaMedicaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background: rgba(26,26,26,0.98); border: 1px solid var(--cor-primaria); border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-clipboard2-pulse text-warning me-2"></i>Ficha Médica Obrigatória</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <p class="text-light small mb-4">Para sua segurança durante a expedição, precisamos destas informações atualizadas. Os dados são sigilosos e usados apenas em caso de emergência.</p>
+                <form id="formFichaMedica">
+                    <input type="hidden" id="fichaReservaId">
+                    <div class="mb-3">
+                        <label for="fichaNome" class="form-label text-light small fw-bold">Nome Completo do Participante</label>
+                        <input type="text" id="fichaNome" name="nome_completo" class="form-control bg-dark text-white border-secondary" autocomplete="name" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="fichaSangue" class="form-label text-light small fw-bold">Tipo Sanguíneo</label>
+                            <select id="fichaSangue" name="tipo_sanguineo" class="form-select bg-dark text-white border-secondary">
+                                <option value="" selected>Não sei informar</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fichaEmergencia" class="form-label text-light small fw-bold">Contato de Emergência</label>
+                            <input type="text" id="fichaEmergencia" name="contato_emergencia" class="form-control bg-dark text-white border-secondary" placeholder="Nome e Telefone" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="fichaAlergias" class="form-label text-light small fw-bold">Restrições Alimentares ou Alergias</label>
+                        <textarea id="fichaAlergias" name="restricoes_alimentares" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Ex: Intolerância à lactose, alergia a picada de abelha, asma… (Se não houver, digite 'Nenhuma')" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primario w-100 py-3" id="btnSalvarFicha">
+                        SALVAR FICHA MÉDICA
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let reservaIdParaCancelar = null;
+
+    document.querySelectorAll('.btn-cancelar-ação').forEach(btn => {
+        btn.addEventListener('click', function() {
+            reservaIdParaCancelar = this.dataset.id;
+            document.getElementById('cancelTitulo').textContent = this.dataset.titulo;
+            new bootstrap.Modal(document.getElementById('cancelModal')).show();
+        });
+    });
+
+    document.getElementById('btnConfirmarCancelamento').addEventListener('click', function() {
+        if(!reservaIdParaCancelar) return;
+
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cancelando...';
+        btn.disabled = true;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/api/v1/reservas/${reservaIdParaCancelar}/cancelar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            if(data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('cancelModal')).hide();
+                showToast(data.message, 'success');
+                // Atualiza a tela recarregando (após o usuário ver o aviso)
+                setTimeout(function() { window.location.reload(); }, 1200);
+            } else {
+                showToast('Erro: ' + data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            showToast('Erro ao cancelar. Tente novamente.', 'danger');
+        });
+    });
+
+    document.querySelectorAll('.btn-abrir-ficha').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('fichaReservaId').value = this.dataset.id;
+            new bootstrap.Modal(document.getElementById('fichaMedicaModal')).show();
+        });
+    });
+
+    document.getElementById('formFichaMedica').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnSalvarFicha');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+        btn.disabled = true;
+
+        const reservaId = document.getElementById('fichaReservaId').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        const payload = {
+            nome_completo: document.getElementById('fichaNome').value,
+            tipo_sanguineo: document.getElementById('fichaSangue').value,
+            contato_emergencia: document.getElementById('fichaEmergencia').value,
+            restricoes_alimentares: document.getElementById('fichaAlergias').value
+        };
+
+        fetch(`/api/v1/reservas/${reservaId}/ficha-medica/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            if(data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('fichaMedicaModal')).hide();
+                showToast(data.message, 'success');
+                setTimeout(function() { window.location.reload(); }, 1200);
+            } else {
+                showToast('Erro: ' + data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            showToast('Erro ao salvar ficha. Tente novamente.', 'danger');
+        });
+    });
+</script>
+{% endblock %}

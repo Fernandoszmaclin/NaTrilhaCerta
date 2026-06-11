@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import timedelta
+import uuid
 
 class Expedicao(models.Model):
     """Modelo de expedição para gestão de viagens."""
@@ -14,13 +15,13 @@ class Expedicao(models.Model):
     titulo = models.CharField(max_length=150, verbose_name="Título")
     descricao = models.TextField(verbose_name="Descrição Curta", help_text="Breve descrição da expedição (exibida nos cards)")
     descricao_completa = models.TextField(verbose_name="Descrição Completa", blank=True, help_text="Descrição detalhada da expedição")
-    data_inicio = models.DateField(verbose_name="Data de Saída")
+    data_inicio = models.DateField(verbose_name="Data de Saída", db_index=True)
     data_fim = models.DateField(verbose_name="Data de Volta")
     preco = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço Atual (R$)", default=0)
     destino = models.CharField(max_length=200, verbose_name="Destino / Local", blank=True)
     dificuldade = models.CharField(max_length=20, choices=DIFICULDADE_CHOICES, default='moderado', verbose_name="Nível de Dificuldade")
     vagas_totais = models.IntegerField(verbose_name="Vagas Totais", default=20)
-    ativa = models.BooleanField(default=True, verbose_name="Reserva Aberta?")
+    ativa = models.BooleanField(default=True, verbose_name="Reserva Aberta?", db_index=True)
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     atualizado_em = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
 
@@ -41,8 +42,8 @@ class Expedicao(models.Model):
 
     @property
     def vagas_disponiveis(self):
-        """Calcula vagas subtraindo as reservas não canceladas."""
-        reservas_ativas = self.reservas.exclude(status='cancelada').aggregate(
+        """Calcula vagas subtraindo as reservas confirmadas ou pendentes (ignora lista de espera)."""
+        reservas_ativas = self.reservas.exclude(status__in=['cancelada', 'lista_espera']).aggregate(
             total=models.Sum('quantidade_pessoas')
         )['total'] or 0
         return self.vagas_totais - reservas_ativas
@@ -56,20 +57,26 @@ class Expedicao(models.Model):
     def vagas(self):
         return self.vagas_disponiveis
 
+    def _imagem_na_posicao(self, indice):
+        """Retorna a imagem na posição dada (0-based) ou None.
+
+        Materializa o queryset uma vez para reaproveitar o prefetch_related
+        e evitar uma query extra de .count() por acesso.
+        """
+        imgs = list(self.imagens.all())
+        return imgs[indice].imagem if len(imgs) > indice else None
+
     @property
     def imagem(self):
-        primeira = self.imagens.first()
-        return primeira.imagem if primeira else None
+        return self._imagem_na_posicao(0)
 
     @property
     def imagem_2(self):
-        imgs = self.imagens.all()
-        return imgs[1].imagem if imgs.count() > 1 else None
+        return self._imagem_na_posicao(1)
 
     @property
     def imagem_3(self):
-        imgs = self.imagens.all()
-        return imgs[2].imagem if imgs.count() > 2 else None
+        return self._imagem_na_posicao(2)
 
 
 class ImagemExpedicao(models.Model):
@@ -90,6 +97,8 @@ class Reserva(models.Model):
     STATUS_CHOICES = [
         ('pendente', 'Pendente'),
         ('confirmada', 'Confirmada'),
+        ('confirmada_e_pronta', 'Confirmada e Pronta'),
+        ('lista_espera', 'Lista de Espera'),
         ('cancelada', 'Cancelada'),
         ('concluida', 'Concluída'),
     ]
@@ -97,7 +106,7 @@ class Reserva(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservas', verbose_name="Usuário")
     expedicao = models.ForeignKey(Expedicao, on_delete=models.PROTECT, related_name='reservas', verbose_name="Expedição")
     data_reserva = models.DateTimeField(auto_now_add=True, verbose_name="Data da Reserva")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name="Status")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name="Status", db_index=True)
     quantidade_pessoas = models.PositiveIntegerField(default=1, verbose_name="Quantidade de Pessoas")
     
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário Pago (R$)", default=0.00)
@@ -111,11 +120,63 @@ class Reserva(models.Model):
         ordering = ['-data_reserva']
 
     def save(self, *args, **kwargs):
-        # Auto-preenche os valores financeiros baseados no preço atual na hora da reserva
-        if not self.pk and (not self.valor_unitario or self.valor_unitario == 0):
+        # Na criação, deriva os valores financeiros do preço atual da expedição,
+        # exceto quando um valor_total foi informado explicitamente (ex.: desconto).
+        # Usar valor_total como gatilho preserva expedições gratuitas (preço 0).
+        if not self.pk and not self.valor_total:
             self.valor_unitario = self.expedicao.preco
             self.valor_total = self.valor_unitario * self.quantidade_pessoas
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.usuario.get_full_name() or self.usuario.username} → {self.expedicao.titulo}"
+
+
+class Pagamento(models.Model):
+    """Armazena o histórico financeiro e transacional (@/database & @/secure)."""
+    METODO_CHOICES = [
+        ('pix', 'PIX'),
+        ('cartao_credito', 'Cartão de Crédito'),
+    ]
+    STATUS_PAGAMENTO_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('aprovado', 'Aprovado'),
+        ('recusado', 'Recusado'),
+        ('estornado', 'Estornado'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE, related_name='pagamentos')
+    gateway_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID no Gateway", help_text="ID da transação no Mercado Pago/Stripe")
+    metodo_pagamento = models.CharField(max_length=50, choices=METODO_CHOICES, verbose_name="Método de Pagamento")
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Total")
+    status = models.CharField(max_length=20, choices=STATUS_PAGAMENTO_CHOICES, default='pendente', db_index=True)
+    qr_code_pix = models.TextField(blank=True, null=True, verbose_name="PIX Copia e Cola")
+    link_recibo = models.URLField(blank=True, null=True, verbose_name="Link do Recibo")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pagamento"
+        verbose_name_plural = "Pagamentos"
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f"Pagamento {self.id} - {self.get_status_display()}"
+
+
+class FichaMedica(models.Model):
+    """Ficha obrigatória para cada participante, garantindo segurança e normalização (1:N com Reserva)."""
+    reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE, related_name='fichas_medicas')
+    nome_completo = models.CharField(max_length=150, verbose_name="Nome Completo do Participante", default="Não informado")
+    restricoes_alimentares = models.TextField(blank=True, verbose_name="Restrições Alimentares")
+    tipo_sanguineo = models.CharField(max_length=5, blank=True, verbose_name="Tipo Sanguíneo")
+    contato_emergencia = models.CharField(max_length=255, verbose_name="Contato de Emergência (Nome e Telefone)")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Ficha Médica"
+        verbose_name_plural = "Fichas Médicas"
+
+    def __str__(self):
+        return f"Ficha de {self.nome_completo} (Reserva: {self.reserva.id})"

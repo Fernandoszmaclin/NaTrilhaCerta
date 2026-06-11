@@ -1,0 +1,12 @@
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <button type="button" class="btn-close btn-close-white position-absolute" style="top:25px;right:25px;z-index:1060; opacity: 1; filter: drop-shadow(0px 0px 5px rgba(0,0,0,1));" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0"
+                 onclick="bootstrap.Modal.getInstance(document.getElementById('lightboxModal')).hide()"
+                 style="background: rgba(0,0,0,0.9); cursor: zoom-out;">
+                <img id="lightboxImg" src="" alt="Imagem da expedição ampliada" class="img-fluid" style="max-height: 95vh; max-width: 95vw; object-fit: contain; box-shadow: 0 0 50px rgba(0,0,0,0.8); border-radius: 8px;" onclick="event.stopPropagation();">
+            </div>
+        </div>
+    </div>
+</div>

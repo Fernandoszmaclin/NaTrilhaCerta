@@ -1,0 +1,60 @@
+{% load static %}
+<footer class="footer-custom">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-4 mb-4">
+                <img src="{% static 'img/logo.png' %}" alt="Na Trilha Certa" class="footer-logo" width="220" height="220">
+                <p class="mt-3 pe-md-5">A operadora de turismo off-road especializada em criar as melhores experiências sobre duas rodas. Pura adrenalina, segurança e natureza viva em roteiros exclusivos.</p>
+                <div class="social-icons mt-4">
+                    <a href="https://www.instagram.com/trilhacertaturismo/" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61561486201708" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
+                    <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
+                    <a href="#" aria-disabled="true" tabindex="-1" aria-label="YouTube (em breve)" title="Em breve" style="opacity:.5; pointer-events:none;"><i class="bi bi-youtube" aria-hidden="true"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-4">
+                <h5>Navegação</h5>
+                <ul class="footer-links">
+                    <li><a href="{% url 'home' %}"><i class="bi bi-chevron-right me-2" style="font-size:.8rem;color:var(--cor-primaria);"></i>Home</a></li>
+                    <li><a href="{% url 'expedicoes' %}"><i class="bi bi-chevron-right me-2" style="font-size:.8rem;color:var(--cor-primaria);"></i>Expedições</a></li>
+                    <li><a href="{% url 'home' %}#sobre"><i class="bi bi-chevron-right me-2" style="font-size:.8rem;color:var(--cor-primaria);"></i>Quem Somos</a></li>
+                    <li><a href="{% url 'contato' %}"><i class="bi bi-chevron-right me-2" style="font-size:.8rem;color:var(--cor-primaria);"></i>Contato</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-4 mb-4">
+                <h5>Experiências</h5>
+                <ul class="footer-links">
+                    <li><a href="{% url 'expedicoes' %}"><i class="bi bi-geo-alt me-2" style="font-size:.8rem;color:var(--cor-secundaria);" aria-hidden="true"></i>Serra da Canastra</a></li>
+                    <li><a href="{% url 'expedicoes' %}"><i class="bi bi-geo-alt me-2" style="font-size:.8rem;color:var(--cor-secundaria);" aria-hidden="true"></i>Serra da Bocaina</a></li>
+                    <li><a href="{% url 'expedicoes' %}"><i class="bi bi-geo-alt me-2" style="font-size:.8rem;color:var(--cor-secundaria);" aria-hidden="true"></i>Cunha (Gastronomia)</a></li>
+                    <li><a href="{% url 'expedicoes' %}"><i class="bi bi-geo-alt me-2" style="font-size:.8rem;color:var(--cor-secundaria);" aria-hidden="true"></i>Desafio Atacama (Internacional)</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-4 mb-4 footer-contact">
+                <h5>Fale Conosco</h5>
+                <div class="d-flex align-items-start mb-3 mt-4">
+                    <i class="bi bi-geo-alt-fill mt-1"></i>
+                    <div>
+                        <strong class="d-block text-white">Base Operacional</strong>
+                        <span>Av. das Palmeiras, 1500<br>São Paulo - SP</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span class="text-white">(11) 98765-4321</span>
+                </div>
+                <div class="d-flex align-items-center mb-4">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span class="text-white">aventura@natrilhacerta.com.br</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p class="mb-0">© 2026 Na Trilha Certa Expedições Off-Road. Todos os direitos reservados. Feito para quem ama barro.</p>
+        </div>
+    </div>
+</footer>

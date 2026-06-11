@@ -3,19 +3,63 @@
 from pathlib import Path
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _load_env_file(path: Path, *, override: bool = False) -> None:
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+
+        if key and (override or key not in os.environ):
+            os.environ[key] = value
 
 
-# Carrega segredos de variáveis de ambiente.
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-#0#8#_3xvvj0u$)9$od6s_d(8qbbiv==w7eo0b(2+*&thgip73')
+def _env_bool(name: str, default: bool = False) -> bool:
+    return os.environ.get(name, str(default)).strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+def _env_list(name: str, default: str = '') -> list[str]:
+    raw = os.environ.get(name, default)
+    return [item.strip() for item in raw.split(',') if item.strip()]
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+
+# Carrega .env (se python-dotenv estiver instalado) — opcional, não falha se ausente.
+try:
+    from dotenv import load_dotenv  # type: ignore
+    load_dotenv(BASE_DIR.parent / '.env')
+    load_dotenv(BASE_DIR / '.env', override=True)
+except Exception:
+    _load_env_file(BASE_DIR.parent / '.env')
+    _load_env_file(BASE_DIR / '.env', override=True)
+
+
+# Segredos vêm SEMPRE do ambiente em produção.
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-dev-only-change-me-in-production',
+)
+
+DEBUG = _env_bool('DJANGO_DEBUG', False)
+
+# Falha segura: nunca rodar produção com a SECRET_KEY de desenvolvimento.
+if not DEBUG and 'insecure' in SECRET_KEY:
+    raise ImproperlyConfigured(
+        'DJANGO_SECRET_KEY precisa ser definida no ambiente para rodar em produção.'
+    )
+
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
 
 # Configurações de segurança HTTP
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -68,65 +112,45 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TrilhaCerta.wsgi.application'
 
 
-# Database
+# Database — credenciais via ambiente, fallback ao SQLite local quando DB_ENGINE='sqlite'.
+_DB_ENGINE = os.environ.get('DB_ENGINE', 'postgresql').lower()
 
-
-# ── SQLite (fallback local) ──
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# ── PostgreSQL ──
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'trilhacerta_db',
-        'USER': 'trilhacerta_user',
-        'PASSWORD': 'trilha@2026',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if _DB_ENGINE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
-
-# Password validation
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'trilhacerta_db'),
+            'USER': os.environ.get('DB_USER', 'trilhacerta_user'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
 # Internationalization
-
-
 LANGUAGE_CODE = 'pt-br'
-
 TIME_ZONE = 'America/Sao_Paulo'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-
-
-
+# Static & media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -134,6 +158,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
@@ -145,12 +170,47 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Login redirect
 LOGIN_URL = '/'
 
-# Configurações de Sessão
+# Sessões
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
 SESSION_COOKIE_AGE = 2592000
-
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
 SESSION_SAVE_EVERY_REQUEST = True
 
+
+# Webhook do gateway de pagamento — segredo HMAC para validação de assinatura.
+PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
+
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}

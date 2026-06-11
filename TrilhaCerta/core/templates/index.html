@@ -16,8 +16,10 @@
         image-rendering: -webkit-optimize-contrast;
         display: flex;
         align-items: center;
-        margin-top: -85px;
-        /* Compensa o padding do main */
+        margin-top: -140px;
+        padding-top: 200px;
+        padding-bottom: 100px;
+        /* Garante que o texto fique bem abaixo da navbar alta */
     }
 
     .hero-overlay {
@@ -64,7 +66,7 @@
     .feature-box {
         text-align: center;
         padding: 30px 20px;
-        transition: all 0.4s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         background: rgba(30, 30, 30, 0.4);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -73,9 +75,9 @@
     }
 
     .feature-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 106, 0, 0.1);
-        border-color: rgba(255, 106, 0, 0.3);
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+        border-color: rgba(255, 106, 0, 0.25);
     }
 
     .feature-icon {
@@ -89,7 +91,7 @@
         font-size: 2.5rem;
         color: white;
         margin: 0 auto 20px;
-        box-shadow: 0 10px 20px rgba(255, 106, 0, 0.3);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     }
 
     .feature-title {
@@ -106,14 +108,14 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 16px;
         overflow: hidden;
-        transition: all 0.4s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         height: 100%;
     }
 
     .expedicao-card:hover {
-        transform: translateY(-15px) scale(1.01);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 106, 0, 0.15);
-        border-color: rgba(255, 106, 0, 0.3);
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+        border-color: rgba(255, 106, 0, 0.25);
     }
 
     .expedicao-img-wrapper {
@@ -126,7 +128,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .expedicao-card:hover .expedicao-img {
@@ -180,13 +182,13 @@
 
     .sobre-img {
         border-radius: 16px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 106, 0, 0.2);
-        animation: float 6s ease-in-out infinite;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        animation: float 8s ease-in-out infinite;
     }
-    
+
     @keyframes float {
         0% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
+        50% { transform: translateY(-6px); }
         100% { transform: translateY(0px); }
     }
 
@@ -196,7 +198,7 @@
         url('{% static "img/expedicao_rio.png" %}');
         background-size: cover;
         background-position: center;
-        background-attachment: fixed;
+        background-attachment: scroll;
         text-align: center;
         padding: 120px 0;
     }
@@ -247,7 +249,7 @@
         <div class="row">
             <div class="col-lg-8" data-aos="fade-up">
                 <h1 class="hero-title text-white">
-                    VERDADEIRO <span class="text-gradient">OFF-ROAD</span><br>
+                    VERDADEIRO <span class="text-gradient" style="white-space: nowrap; padding-right: 0.1em;">OFF-ROAD</span><br>
                     <span class="text-gradient">PRA QUEM TEM CORAGEM</span>
                 </h1>
                 <p class="hero-subtitle">
@@ -317,16 +319,22 @@
                         <div id="carousel-index-{{ exp.id }}" class="carousel slide h-100" data-bs-ride="false">
                             <div class="carousel-inner h-100">
                                 <div class="carousel-item active h-100">
-                                    <img src="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100" style="cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100">
+                                    </button>
                                 </div>
                                 {% if exp.imagem_2 %}
                                 <div class="carousel-item h-100">
-                                    <img src="{{ exp.imagem_2.url }}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100" style="cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{{ exp.imagem_2.url }}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100">
+                                    </button>
                                 </div>
                                 {% endif %}
                                 {% if exp.imagem_3 %}
                                 <div class="carousel-item h-100">
-                                    <img src="{{ exp.imagem_3.url }}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100" style="cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{{ exp.imagem_3.url }}" alt="{{ exp.titulo }}" class="expedicao-img d-block w-100 h-100">
+                                    </button>
                                 </div>
                                 {% endif %}
                             </div>
@@ -470,7 +478,7 @@
                 <div class="detail-hero-overlay" style="z-index: 3;">
                     <h3 id="detailTitle"></h3>
                 </div>
-                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="detail-body">
                 <div class="detail-grid">
@@ -512,34 +520,25 @@
 </div>
 
 <script>
-document.querySelectorAll('.btn-saiba-mais').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        let img1 = this.dataset.imagem;
-        let img2 = this.dataset.imagem2;
-        let img3 = this.dataset.imagem3;
-        
-        let innerHtml = `<div class="carousel-item active h-100"><img src="${img1}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-        if(img2) innerHtml += `<div class="carousel-item h-100"><img src="${img2}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-        if(img3) innerHtml += `<div class="carousel-item h-100"><img src="${img3}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-        
-        document.getElementById('detailCarouselInner').innerHTML = innerHtml;
-        
-        if(img2 || img3) {
-            document.getElementById('modalCarouselPrev').style.display = 'block';
-            document.getElementById('modalCarouselNext').style.display = 'block';
-        } else {
-            document.getElementById('modalCarouselPrev').style.display = 'none';
-            document.getElementById('modalCarouselNext').style.display = 'none';
-        }
+document.querySelectorAll('.btn-saiba-mais').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const { imagem, imagem2, imagem3, titulo, destino, inicio, fim, dias, dificuldade, vagas, preco, descricao } = btn.dataset;
 
-        document.getElementById('detailTitle').textContent = this.dataset.titulo;
-        document.getElementById('detailDestino').textContent = this.dataset.destino;
-        document.getElementById('detailDatas').textContent = this.dataset.inicio + ' a ' + this.dataset.fim;
-        document.getElementById('detailDias').textContent = this.dataset.dias + ' dias';
-        document.getElementById('detailDif').textContent = this.dataset.dificuldade;
-        document.getElementById('detailVagas').textContent = this.dataset.vagas + ' vagas';
-        document.getElementById('detailPreco').textContent = 'R$ ' + this.dataset.preco;
-        document.getElementById('detailDesc').textContent = this.dataset.descricao;
+        setupDetailCarousel({
+            innerId: 'detailCarouselInner',
+            prevId: 'modalCarouselPrev',
+            nextId: 'modalCarouselNext',
+            images: [imagem, imagem2, imagem3],
+        });
+
+        document.getElementById('detailTitle').textContent = titulo;
+        document.getElementById('detailDestino').textContent = destino;
+        document.getElementById('detailDatas').textContent = `${inicio} a ${fim}`;
+        document.getElementById('detailDias').textContent = `${dias} dias`;
+        document.getElementById('detailDif').textContent = dificuldade;
+        document.getElementById('detailVagas').textContent = `${vagas} vagas`;
+        document.getElementById('detailPreco').textContent = `R$ ${preco}`;
+        document.getElementById('detailDesc').textContent = descricao;
         new bootstrap.Modal(document.getElementById('detailModal')).show();
     });
 });

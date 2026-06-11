@@ -1,0 +1,66 @@
+<div class="modal fade" id="authModal" tabindex="-1" aria-modal="true" aria-labelledby="authModalTitle" aria-hidden="true"
+     data-login-url="{% url 'login' %}" data-signup-url="{% url 'signup' %}">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26,26,26,0.97); border: 1px solid var(--cor-cinza); border-radius: 16px; backdrop-filter: blur(20px);">
+            <h2 id="authModalTitle" class="visually-hidden">Entrar ou criar conta</h2>
+            <div class="modal-header border-0 pb-0">
+                <ul class="nav nav-pills w-100 justify-content-center gap-2" id="authTabs">
+                    <li class="nav-item"><button type="button" class="nav-link active auth-tab-btn" data-target="loginForm">Entrar</button></li>
+                    <li class="nav-item"><button type="button" class="nav-link auth-tab-btn" data-target="signupForm">Criar Conta</button></li>
+                </ul>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body px-4 pb-4 pt-3">
+                <div id="authAlert" class="alert d-none mb-3" role="alert" style="border-radius:8px;font-size:0.9rem;"></div>
+
+                <form id="loginForm" class="auth-form">
+                    <div class="mb-3">
+                        <label for="loginUsername" class="form-label text-light small">Usuário</label>
+                        <input type="text" id="loginUsername" name="username" class="form-control bg-dark text-white border-secondary" placeholder="Seu nome de usuário" autocomplete="username" spellcheck="false" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="loginPassword" class="form-label text-light small">Senha</label>
+                        <input type="password" id="loginPassword" name="password" class="form-control bg-dark text-white border-secondary" placeholder="Sua senha" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primario w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>ENTRAR
+                    </button>
+                </form>
+
+                <form id="signupForm" class="auth-form d-none">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="signupFirstName" class="form-label text-light small">Nome</label>
+                            <input type="text" id="signupFirstName" name="first_name" class="form-control bg-dark text-white border-secondary" placeholder="Nome" autocomplete="given-name" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="signupLastName" class="form-label text-light small">Sobrenome</label>
+                            <input type="text" id="signupLastName" name="last_name" class="form-control bg-dark text-white border-secondary" placeholder="Sobrenome" autocomplete="family-name">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signupEmail" class="form-label text-light small">E-mail</label>
+                        <input type="email" id="signupEmail" name="email" class="form-control bg-dark text-white border-secondary" placeholder="seu@email.com" autocomplete="email" spellcheck="false" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signupUsername" class="form-label text-light small">Usuário</label>
+                        <input type="text" id="signupUsername" name="username" class="form-control bg-dark text-white border-secondary" placeholder="Escolha um nome de usuário" autocomplete="username" spellcheck="false" required>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label for="signupPassword" class="form-label text-light small">Senha</label>
+                            <input type="password" id="signupPassword" name="password" class="form-control bg-dark text-white border-secondary" placeholder="Min. 6 caracteres" autocomplete="new-password" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="signupPassword2" class="form-label text-light small">Confirmar</label>
+                            <input type="password" id="signupPassword2" name="password2" class="form-control bg-dark text-white border-secondary" placeholder="Repita a senha" autocomplete="new-password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primario w-100 py-2">
+                        <i class="bi bi-person-plus me-2" aria-hidden="true"></i>CRIAR CONTA
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

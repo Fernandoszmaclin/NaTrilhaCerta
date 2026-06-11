@@ -9,7 +9,7 @@
         background-size: cover; background-position: center 45%;
         image-rendering: high-quality;
         image-rendering: -webkit-optimize-contrast;
-        padding: 140px 0 80px; text-align: center; margin-top: -85px;
+        padding: 240px 0 100px; text-align: center; margin-top: -140px;
     }
     .page-header h1 { font-size: 3.5rem; font-weight: 900; text-transform: uppercase; }
     .page-header h1 span { color: var(--cor-primaria); }
@@ -17,13 +17,13 @@
 
     .exp-card {
         background: var(--cor-cinza-escuro); border: 1px solid var(--cor-cinza);
-        border-radius: 12px; overflow: hidden; transition: all 0.4s ease; height: 100%;
+        border-radius: 12px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; height: 100%;
     }
     .exp-card.esgotado-card {
         filter: grayscale(100%);
         opacity: 0.65;
     }
-    .exp-card:hover { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(0,0,0,0.6); border-color: var(--cor-primaria); }
+    .exp-card:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,0,0,0.45); border-color: var(--cor-primaria); }
     .exp-card-img { position: relative; height: 240px; overflow: hidden; }
     .exp-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
     .exp-card:not(.esgotado-card):hover .exp-card-img img { transform: scale(1.08); }
@@ -92,17 +92,20 @@
     /* Filtros e Ordenação */
     .filter-bar .sort-btn {
         background: transparent; color: var(--texto-muted); border: 1px solid var(--cor-cinza);
-        border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: all 0.3s; white-space: nowrap;
+        border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: background-color 0.3s, color 0.3s, border-color 0.3s; white-space: nowrap;
     }
     .filter-bar .sort-btn:hover { background: rgba(255,255,255,0.1); color: white; }
     .filter-bar .sort-btn.active { background: var(--cor-primaria); border-color: var(--cor-primaria); color: white; }
     
     .filter-btn-disponivel {
         background: transparent; color: #4CAF50; border: 1px solid #4CAF50;
-        border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: all 0.3s;
+        border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: background-color 0.3s, color 0.3s;
     }
     .filter-btn-disponivel:hover { background: rgba(76, 175, 80, 0.1); }
-    .filter-btn-disponivel.active { background: #4CAF50; color: white; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); }
+    .filter-btn-disponivel.active { background: #4CAF50; color: white; }
+
+    /* Anima apenas o grid na troca de filtros (View Transitions) */
+    #expedicoesGrid { view-transition-name: --exp-grid; }
 </style>
 
 <section class="page-header">
@@ -128,8 +131,8 @@
                             Data
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item sort-action active" href="#" data-sort="data_asc">Mais próximo</a></li>
-                            <li><a class="dropdown-item sort-action" href="#" data-sort="data_desc">Menos próximo</a></li>
+                            <li><button type="button" class="dropdown-item sort-action active" data-sort="data_asc">Mais próximo</button></li>
+                            <li><button type="button" class="dropdown-item sort-action" data-sort="data_desc">Menos próximo</button></li>
                         </ul>
                     </div>
 
@@ -138,8 +141,8 @@
                             Preço
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item sort-action" href="#" data-sort="preco_asc">Menor preço</a></li>
-                            <li><a class="dropdown-item sort-action" href="#" data-sort="preco_desc">Maior preço</a></li>
+                            <li><button type="button" class="dropdown-item sort-action" data-sort="preco_asc">Menor preço</button></li>
+                            <li><button type="button" class="dropdown-item sort-action" data-sort="preco_desc">Maior preço</button></li>
                         </ul>
                     </div>
 
@@ -149,13 +152,13 @@
                             Todos
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark" id="estadoFilterList" style="max-height: 250px; overflow-y: auto;">
-                            <li><a class="dropdown-item filter-estado active" href="#" data-estado="todos">Todos os estados</a></li>
+                            <li><button type="button" class="dropdown-item filter-estado active" data-estado="todos">Todos os estados</button></li>
                             <!-- Populated by JS -->
                         </ul>
                     </div>
                 </div>
                 <div class="w-100 w-md-auto text-md-end d-flex flex-wrap gap-2 justify-content-md-end mt-3 mt-md-0">
-                    <button class="btn btn-sm text-white" id="btnClearFilters" style="display: none; background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: all 0.3s;">
+                    <button type="button" class="btn btn-sm text-white" id="btnClearFilters" style="display: none; background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 20px; padding: 6px 16px; font-weight: 600; transition: background-color 0.3s, border-color 0.3s;">
                         <i class="bi bi-x-circle me-1"></i> Limpar Filtros
                     </button>
                     <button class="btn btn-sm filter-btn-disponivel w-100 w-md-auto flex-grow-1 flex-md-grow-0" id="filterDisponivel">
@@ -177,16 +180,22 @@
                         <div id="carousel-exp-{{ exp.id }}" class="carousel slide h-100" data-bs-ride="false">
                             <div class="carousel-inner h-100">
                                 <div class="carousel-item active h-100">
-                                    <img src="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{% if exp.imagem %}{{ exp.imagem.url }}{% else %}{% static 'img/expedicao_canastra.png' %}{% endif %}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover;">
+                                    </button>
                                 </div>
                                 {% if exp.imagem_2 %}
                                 <div class="carousel-item h-100">
-                                    <img src="{{ exp.imagem_2.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{{ exp.imagem_2.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover;">
+                                    </button>
                                 </div>
                                 {% endif %}
                                 {% if exp.imagem_3 %}
                                 <div class="carousel-item h-100">
-                                    <img src="{{ exp.imagem_3.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)">
+                                    <button type="button" class="zoom-btn" aria-label="Ampliar imagem de {{ exp.titulo }}" onclick="openLightbox(this.querySelector('img').src)">
+                                        <img src="{{ exp.imagem_3.url }}" alt="{{ exp.titulo }}" class="d-block w-100 h-100" style="object-fit: cover;">
+                                    </button>
                                 </div>
                                 {% endif %}
                             </div>
@@ -235,9 +244,10 @@
                         <span class="exp-diff diff-{{ exp.dificuldade }}">{{ exp.get_dificuldade_display }}</span>
                         <div class="mt-3">
                             {% if exp.esgotada %}
-                            <button disabled class="btn btn-outline-secondary w-100" style="border: 2px solid var(--cor-cinza); opacity: 0.6;">LISTA DE ESPERA</button>
+                            <button class="btn btn-outline-secondary w-100 btn-lista-espera" data-id="{{ exp.id }}" style="border: 2px solid var(--cor-cinza); opacity: 0.8; font-weight: 600;">ENTRAR NA LISTA DE ESPERA</button>
                             {% else %}
                             <button class="btn btn-outline-amarelo w-100 btn-reservar-agora"
+                                data-id="{{ exp.id }}"
                                 data-titulo="{{ exp.titulo }}"
                                 data-descricao="{{ exp.descricao_completa|default:exp.descricao }}"
                                 data-inicio="{{ exp.data_inicio|date:'d/m/Y' }}"
@@ -289,7 +299,7 @@
                 <div class="detail-hero-overlay" style="z-index: 3;">
                     <h3 id="detailTitle"></h3>
                 </div>
-                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top:15px;right:15px;z-index:5;" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="detail-body">
                 <div class="detail-grid">
@@ -319,40 +329,106 @@
                     </div>
                 </div>
                 <p class="detail-desc" id="detailDesc"></p>
-                <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <button id="btnReservarModal" class="btn btn-primario px-4">
-                        <i class="bi bi-whatsapp me-2"></i>RESERVAR
+                <div class="d-flex flex-column flex-md-row gap-3 align-items-stretch">
+                    <button id="btnReservarModal" class="btn btn-primario flex-grow-1">
+                        RESERVAR
                     </button>
-                    <button class="btn btn-outline-amarelo px-4" data-bs-dismiss="modal">FECHAR</button>
+                    <button id="btnMaisInfos" class="btn btn-outline-verde flex-grow-1">
+                        <i class="bi bi-whatsapp me-2"></i>Mais informações
+                    </button>
+                    <button class="btn btn-outline-amarelo flex-grow-1" data-bs-dismiss="modal">FECHAR</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Checkout Opções -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26,26,26,0.98); border: 1px solid var(--cor-primaria); border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white fw-bold">Finalizar Reserva</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label text-light small fw-bold">Quantos Pilotos?</label>
+                    <div class="input-group">
+                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdMinus" style="width: 40px;">-</button>
+                        <input type="number" id="inputQtdPilotos" class="form-control bg-dark text-white text-center border-secondary fw-bold fs-5" value="1" min="1" max="10" readonly>
+                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdPlus" style="width: 40px;">+</button>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-light small fw-bold">Forma de Pagamento</label>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check border border-secondary rounded p-3" style="cursor: pointer;" onclick="document.getElementById('radioPix').click();">
+                            <input class="form-check-input ms-0" type="radio" name="formaPagamento" id="radioPix" value="pix" checked>
+                            <label class="form-check-label text-white ms-2" for="radioPix">
+                                <i class="bi bi-qr-code text-secundaria me-1"></i> PIX
+                            </label>
+                        </div>
+                        <div class="form-check border border-secondary rounded p-3 opacity-50" style="cursor: pointer;">
+                            <input class="form-check-input ms-0" type="radio" name="formaPagamento" id="radioCartao" value="cartao" disabled>
+                            <label class="form-check-label text-white ms-2" for="radioCartao">
+                                <i class="bi bi-credit-card text-secundaria me-1"></i> Cartão (Em Breve)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-dark rounded border border-secondary">
+                    <span class="text-light">Total a Pagar:</span>
+                    <h4 class="text-white fw-bold mb-0" id="checkoutTotalValue">R$ 0,00</h4>
+                </div>
+                <button id="btnConfirmarCheckout" class="btn btn-primario w-100 py-3" style="font-size: 1.1rem;">
+                    IR PARA PAGAMENTO
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PIX Checkout -->
+<div class="modal fade" id="pixModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26,26,26,0.98); border: 1px solid var(--cor-primaria);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-qr-code me-2"></i>Pagamento PIX</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="text-light mb-4">Escaneie o QR Code abaixo no app do seu banco para garantir sua vaga.</p>
+                <div class="bg-white p-3 rounded-3 d-inline-block mb-3">
+                    <img id="pixQrCodeImg" src="" alt="QR Code PIX">
+                </div>
+                <h4 class="text-white fw-bold mb-3" id="pixValorTotal">R$ 0,00</h4>
+                <div class="input-group mb-3 px-3">
+                    <input type="text" id="pixCopiaCola" class="form-control bg-dark text-white border-secondary" readonly>
+                    <button class="btn btn-primario" type="button" id="btnCopiarPix">Copiar</button>
+                </div>
+                <p class="text-warning small"><i class="bi bi-clock-history"></i> O código expira em 15 minutos.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    var isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
 
     document.querySelectorAll('.btn-reservar-agora').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            let img1 = this.dataset.imagem;
-            let img2 = this.dataset.imagem2;
-            let img3 = this.dataset.imagem3;
-            
-            let innerHtml = `<div class="carousel-item active h-100"><img src="${img1}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-            if(img2) innerHtml += `<div class="carousel-item h-100"><img src="${img2}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-            if(img3) innerHtml += `<div class="carousel-item h-100"><img src="${img3}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" onclick="openLightbox(this.src)" alt=""></div>`;
-            
-            document.getElementById('detailCarouselInner').innerHTML = innerHtml;
-            
-            if(img2 || img3) {
-                document.getElementById('modalCarouselPrev').style.display = 'block';
-                document.getElementById('modalCarouselNext').style.display = 'block';
-            } else {
-                document.getElementById('modalCarouselPrev').style.display = 'none';
-                document.getElementById('modalCarouselNext').style.display = 'none';
-            }
+
+            setupDetailCarousel({
+                innerId: 'detailCarouselInner',
+                prevId: 'modalCarouselPrev',
+                nextId: 'modalCarouselNext',
+                images: [this.dataset.imagem, this.dataset.imagem2, this.dataset.imagem3],
+            });
 
             document.getElementById('detailTitle').textContent = this.dataset.titulo;
             document.getElementById('detailDestino').textContent = this.dataset.destino;
@@ -363,30 +439,176 @@
             document.getElementById('detailPreco').textContent = 'R$ ' + this.dataset.preco;
             document.getElementById('detailDesc').textContent = this.dataset.descricao;
             
-            // Atribui o título da viagem no botão de reservar
-            var btnReservarModal = document.getElementById('btnReservarModal');
+            // Atribui o título e ID da viagem no botão de reservar
+            const btnReservarModal = document.getElementById('btnReservarModal');
             btnReservarModal.dataset.titulo = this.dataset.titulo;
+            btnReservarModal.dataset.id = this.dataset.id;
+            btnReservarModal.dataset.preco = parseFloat(this.dataset.preco.replace(',', '.'));
+
+            const btnMaisInfos = document.getElementById('btnMaisInfos');
+            btnMaisInfos.dataset.titulo = this.dataset.titulo;
             
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         });
     });
 
+    // getCookie() é fornecido globalmente por base.js
+
+    document.getElementById('btnMaisInfos').addEventListener('click', function() {
+        const titulo = this.dataset.titulo;
+        const texto = encodeURIComponent(`Olá! Gostaria de mais informações sobre a expedição: ${titulo}`);
+        const url = `https://api.whatsapp.com/send/?phone=555497145614&text=${texto}&type=phone_number&app_absent=0&utm_source=ig`;
+        window.open(url, '_blank');
+    });
+
+    let precoBaseCheckout = 0;
+    let expedicaoIdCheckout = null;
+
+    function atualizarTotalCheckout() {
+        const qtd = parseInt(document.getElementById('inputQtdPilotos').value);
+        const total = precoBaseCheckout * qtd;
+        document.getElementById('checkoutTotalValue').textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    document.getElementById('btnQtdMinus').addEventListener('click', function() {
+        const input = document.getElementById('inputQtdPilotos');
+        let val = parseInt(input.value);
+        if(val > 1) {
+            input.value = val - 1;
+            atualizarTotalCheckout();
+        }
+    });
+
+    document.getElementById('btnQtdPlus').addEventListener('click', function() {
+        const input = document.getElementById('inputQtdPilotos');
+        let val = parseInt(input.value);
+        if(val < 10) {
+            input.value = val + 1;
+            atualizarTotalCheckout();
+        }
+    });
+
     document.getElementById('btnReservarModal').addEventListener('click', function() {
         if (!isAuthenticated) {
-            // Fecha modal de detalhes
-            var detailModalEl = document.getElementById('detailModal');
-            var detailModal = bootstrap.Modal.getInstance(detailModalEl);
-            detailModal.hide();
-            
-            // Abre modal de login
-            var authModal = new bootstrap.Modal(document.getElementById('authModal'));
-            authModal.show();
+            const detailModalEl = document.getElementById('detailModal');
+            bootstrap.Modal.getInstance(detailModalEl).hide();
+
+            new bootstrap.Modal(document.getElementById('authModal')).show();
         } else {
-            var titulo = this.dataset.titulo;
-            var texto = encodeURIComponent("Olá! Gostaria de reservar a expedição: " + titulo);
-            var url = "https://api.whatsapp.com/send/?phone=555497145614&text=" + texto + "&type=phone_number&app_absent=0&utm_source=ig";
-            window.open(url, '_blank');
+            // Setup Checkout Modal
+            precoBaseCheckout = parseFloat(this.dataset.preco);
+            expedicaoIdCheckout = this.dataset.id;
+            document.getElementById('inputQtdPilotos').value = 1;
+            atualizarTotalCheckout();
+            
+            const detailModalEl = document.getElementById('detailModal');
+            bootstrap.Modal.getInstance(detailModalEl).hide();
+
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
         }
+    });
+
+    document.getElementById('btnConfirmarCheckout').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gerando Pagamento...';
+        btn.disabled = true;
+
+        const qtdPessoas = parseInt(document.getElementById('inputQtdPilotos').value);
+        
+        fetch('/api/v1/pagamentos/checkout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                expedicao_id: expedicaoIdCheckout,
+                quantidade_pessoas: qtdPessoas
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if(data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+                
+                document.getElementById('pixValorTotal').textContent = 'R$ ' + data.valor_total.replace('.', ',');
+                document.getElementById('pixCopiaCola').value = data.qr_code_pix;
+                document.getElementById('pixQrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(data.qr_code_pix);
+                
+                new bootstrap.Modal(document.getElementById('pixModal')).show();
+            } else {
+                showToast('Erro: ' + data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            showToast('Erro ao processar reserva. Tente novamente.', 'danger');
+        });
+    });
+
+    document.getElementById('btnCopiarPix').addEventListener('click', function() {
+        const copyText = document.getElementById('pixCopiaCola');
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // Para mobile
+        navigator.clipboard.writeText(copyText.value);
+
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-check"></i> Copiado!';
+        this.classList.replace('btn-primario', 'btn-success');
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.classList.replace('btn-success', 'btn-primario');
+        }, 2000);
+    });
+
+    document.querySelectorAll('.btn-lista-espera').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!isAuthenticated) {
+                new bootstrap.Modal(document.getElementById('authModal')).show();
+                return;
+            }
+
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+            this.disabled = true;
+
+            const expedicaoId = this.dataset.id;
+            
+            fetch('/api/v1/lista-espera/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ expedicao_id: expedicaoId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                if(data.success) {
+                    showToast(data.message, 'success');
+                    this.innerHTML = '<i class="bi bi-check" aria-hidden="true"></i> NA FILA';
+                    this.classList.replace('btn-outline-secondary', 'btn-success');
+                    this.disabled = true;
+                } else {
+                    showToast('Erro: ' + data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                this.innerHTML = originalText;
+                this.disabled = false;
+                showToast('Erro ao processar solicitação. Tente novamente.', 'danger');
+            });
+        });
     });
 
     // Filtros e Ordenação
@@ -406,12 +628,22 @@
         let filterAvailable = false;
         let currentEstado = 'todos';
 
+        function updateURL() {
+            const p = new URLSearchParams();
+            if (currentSort !== 'data_asc') p.set('sort', currentSort);
+            if (currentEstado !== 'todos') p.set('estado', currentEstado);
+            if (filterAvailable) p.set('disponivel', '1');
+            const qs = p.toString();
+            history.replaceState(null, '', qs ? ('?' + qs) : location.pathname);
+        }
+
         function checkFiltersState() {
             if (currentSort !== 'data_asc' || filterAvailable || currentEstado !== 'todos') {
                 btnClearFilters.style.display = 'inline-block';
             } else {
                 btnClearFilters.style.display = 'none';
             }
+            updateURL();
         }
 
         btnClearFilters.addEventListener('click', function() {
@@ -437,13 +669,7 @@
             estadoBtn.textContent = 'Todos';
 
             checkFiltersState();
-
-            grid.style.opacity = 0;
-            setTimeout(() => {
-                renderGrid();
-                grid.style.opacity = 1;
-                grid.style.transition = 'opacity 0.4s ease';
-            }, 200);
+            animateGrid();
         });
 
         // Popula estados
@@ -467,12 +693,12 @@
         
         Array.from(estadosSet).sort().forEach(uf => {
             const li = document.createElement('li');
-            li.innerHTML = `<a class="dropdown-item filter-estado" href="#" data-estado="${uf.toLowerCase()}">${uf}</a>`;
+            li.innerHTML = `<button type="button" class="dropdown-item filter-estado" data-estado="${uf.toLowerCase()}">${uf}</button>`;
             estadoList.appendChild(li);
         });
         if(temOutros) {
             const li = document.createElement('li');
-            li.innerHTML = `<a class="dropdown-item filter-estado" href="#" data-estado="outros">Outros</a>`;
+            li.innerHTML = `<button type="button" class="dropdown-item filter-estado" data-estado="outros">Outros</button>`;
             estadoList.appendChild(li);
         }
 
@@ -498,7 +724,7 @@
                 const isEsgotada = item.dataset.esgotada === 'true';
                 const showByDisponibilidade = !(filterAvailable && isEsgotada);
                 const showByEstado = (currentEstado === 'todos' || item.dataset.estado === currentEstado);
-                
+
                 if (showByDisponibilidade && showByEstado) {
                     item.style.display = '';
                 } else {
@@ -506,6 +732,20 @@
                 }
                 grid.appendChild(item);
             });
+        }
+
+        // Anima a troca do grid: View Transitions API quando disponível, com fallback.
+        function animateGrid() {
+            if (document.startViewTransition) {
+                document.startViewTransition(() => renderGrid());
+                return;
+            }
+            grid.style.opacity = 0;
+            setTimeout(() => {
+                renderGrid();
+                grid.style.opacity = 1;
+                grid.style.transition = 'opacity 0.4s ease';
+            }, 200);
         }
 
         sortActions.forEach(btn => {
@@ -520,14 +760,7 @@
 
                 currentSort = this.dataset.sort;
                 checkFiltersState();
-                
-                // Animação suave no grid
-                grid.style.opacity = 0;
-                setTimeout(() => {
-                    renderGrid();
-                    grid.style.opacity = 1;
-                    grid.style.transition = 'opacity 0.4s ease';
-                }, 200);
+                animateGrid();
             });
         });
 
@@ -540,15 +773,9 @@
                 
                 currentEstado = e.target.dataset.estado;
                 estadoBtn.textContent = e.target.textContent;
-                
+
                 checkFiltersState();
-                
-                grid.style.opacity = 0;
-                setTimeout(() => {
-                    renderGrid();
-                    grid.style.opacity = 1;
-                    grid.style.transition = 'opacity 0.4s ease';
-                }, 200);
+                animateGrid();
             }
         });
 
@@ -562,16 +789,52 @@
                 this.innerHTML = '<i class="bi bi-circle me-1"></i> Somente Disponíveis';
             }
             
-            // Animação suave no grid
             checkFiltersState();
-            
-            grid.style.opacity = 0;
-            setTimeout(() => {
-                renderGrid();
-                grid.style.opacity = 1;
-                grid.style.transition = 'opacity 0.4s ease';
-            }, 200);
+            animateGrid();
         });
+
+        // Deep-link: aplica filtros/ordenação vindos da URL no carregamento
+        (function initFromURL() {
+            const params = new URLSearchParams(location.search);
+            const sortParam = params.get('sort');
+            const estadoParam = params.get('estado');
+            const dispParam = params.get('disponivel');
+            let changed = false;
+
+            if (sortParam && ['data_asc', 'data_desc', 'preco_asc', 'preco_desc'].includes(sortParam)) {
+                currentSort = sortParam;
+                document.querySelectorAll('.sort-action').forEach(b => b.classList.toggle('active', b.dataset.sort === sortParam));
+                const activeAction = document.querySelector('.sort-action[data-sort="' + sortParam + '"]');
+                if (activeAction) {
+                    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                    activeAction.closest('.dropdown').querySelector('.sort-btn').classList.add('active');
+                }
+                changed = true;
+            }
+
+            if (estadoParam) {
+                const el = document.querySelector('.filter-estado[data-estado="' + estadoParam + '"]');
+                if (el) {
+                    currentEstado = estadoParam;
+                    document.querySelectorAll('.filter-estado').forEach(b => b.classList.remove('active'));
+                    el.classList.add('active');
+                    estadoBtn.textContent = el.textContent;
+                    changed = true;
+                }
+            }
+
+            if (dispParam === '1') {
+                filterAvailable = true;
+                filterBtn.classList.add('active');
+                filterBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i> Mostrando Disponíveis';
+                changed = true;
+            }
+
+            if (changed) {
+                checkFiltersState();
+                renderGrid();
+            }
+        })();
     });
 </script>
 {% endblock %}

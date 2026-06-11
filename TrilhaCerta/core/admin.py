@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Expedicao, Reserva, ImagemExpedicao
+from .models import Expedicao, Reserva, ImagemExpedicao, Pagamento, FichaMedica
 
 class ImagemExpedicaoInline(admin.TabularInline):
     model = ImagemExpedicao
@@ -43,3 +43,18 @@ class ReservaAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     readonly_fields = ('data_reserva',)
     ordering = ('-data_reserva',)
+
+@admin.register(Pagamento)
+class PagamentoAdmin(admin.ModelAdmin):
+    """Admin para gerenciar e visualizar pagamentos do sistema."""
+    list_display = ('id', 'reserva', 'metodo_pagamento', 'valor_total', 'status', 'criado_em')
+    list_filter = ('status', 'metodo_pagamento', 'criado_em')
+    search_fields = ('id', 'reserva__usuario__username', 'reserva__expedicao__titulo', 'gateway_id')
+    readonly_fields = ('id', 'criado_em', 'atualizado_em')
+    list_editable = ('status',)
+
+@admin.register(FichaMedica)
+class FichaMedicaAdmin(admin.ModelAdmin):
+    """Admin para gerenciar fichas médicas de passageiros."""
+    list_display = ('nome_completo', 'reserva', 'tipo_sanguineo', 'contato_emergencia')
+    search_fields = ('nome_completo', 'reserva__usuario__username', 'contato_emergencia', 'restricoes_alimentares')

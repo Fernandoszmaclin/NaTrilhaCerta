@@ -15,15 +15,15 @@
     .contato-card {
         background: var(--cor-cinza-escuro); border: 1px solid var(--cor-cinza);
         border-radius: 16px; padding: 40px; text-align: center;
-        transition: all 0.4s ease; height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; height: 100%;
     }
-    .contato-card:hover { transform: translateY(-8px); border-color: var(--cor-primaria); box-shadow: 0 15px 40px rgba(255,106,0,0.15); }
+    .contato-card:hover { transform: translateY(-5px); border-color: var(--cor-primaria); box-shadow: 0 12px 28px rgba(0,0,0,0.35); }
     .contato-card-icon {
         width: 80px; height: 80px; border-radius: 50%;
         background: linear-gradient(45deg, var(--cor-primaria), #ff3300);
         display: flex; align-items: center; justify-content: center;
         margin: 0 auto 20px; font-size: 2rem; color: white;
-        box-shadow: 0 8px 25px rgba(255,106,0,0.3);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
     }
     .contato-card h4 { color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 12px; text-transform: uppercase; }
     .contato-card p { color: var(--texto-muted); font-size: 0.95rem; margin-bottom: 0; }
@@ -106,6 +106,7 @@
                 </h3>
                 <div class="map-container">
                     <iframe
+                        title="Mapa da base operacional Na Trilha Certa em São Paulo"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.0!2d-46.6558!3d-23.5505!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDMzJzAyLjAiUyA0NsKwMzknMjAuOSJX!5e0!3m2!1spt-BR!2sbr!4v1"
                         width="100%" height="380" style="border:0;" allowfullscreen="" loading="lazy">
                     </iframe>
@@ -128,17 +129,17 @@
                     <i class="bi bi-share-fill me-2" style="color:var(--cor-primaria)"></i>Redes Sociais
                 </h3>
                 <div class="d-flex gap-3 flex-wrap">
-                    <a href="https://www.instagram.com/trilhacertaturismo/" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
-                        <i class="bi bi-instagram fs-5"></i> Instagram
+                    <a href="https://www.instagram.com/trilhacertaturismo/" target="_blank" rel="noopener" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-instagram fs-5" aria-hidden="true"></i> Instagram
                     </a>
-                    <a href="https://www.facebook.com/profile.php?id=61561486201708" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
-                        <i class="bi bi-facebook fs-5"></i> Facebook
+                    <a href="https://www.facebook.com/profile.php?id=61561486201708" target="_blank" rel="noopener" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-facebook fs-5" aria-hidden="true"></i> Facebook
                     </a>
-                    <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
-                        <i class="bi bi-whatsapp fs-5"></i> WhatsApp
+                    <a href="https://api.whatsapp.com/send/?phone=555497145614&text&type=phone_number&app_absent=0&utm_source=ig" target="_blank" rel="noopener" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
+                        <i class="bi bi-whatsapp fs-5" aria-hidden="true"></i> WhatsApp
                     </a>
-                    <a href="#" target="_blank" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4">
-                        <i class="bi bi-youtube fs-5"></i> YouTube
+                    <a href="#" aria-disabled="true" tabindex="-1" title="Em breve" class="btn btn-outline-amarelo d-flex align-items-center gap-2 px-4" style="opacity:.5; pointer-events:none;">
+                        <i class="bi bi-youtube fs-5" aria-hidden="true"></i> YouTube (em breve)
                     </a>
                 </div>
             </div>
