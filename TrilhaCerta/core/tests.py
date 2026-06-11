@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -137,6 +138,27 @@ class ViewAuthTests(TestCase):
                       data='{"first_name":"A","email":"a@a.com","username":"a","password":"1","password2":"1"}',
                       content_type='application/json')
         self.assertEqual(resp.status_code, 400)
+
+    def test_signup_senha_fraca_retorna_400_e_nao_500(self):
+        # Senha numérica passa no form (min_length=8) mas falha em validate_password;
+        # a view precisa traduzir o DomainError em 400 com mensagem amigável.
+        c = Client()
+        resp = c.post(reverse('signup'),
+                      data='{"first_name":"A","email":"b@b.com","username":"b","password":"12345678","password2":"12345678"}',
+                      content_type='application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(resp.json()['success'])
+
+    def test_login_rate_limit_bloqueia_apos_10_tentativas(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        c = Client()
+        body = '{"username":"naoexiste","password":"errada"}'
+        for _ in range(10):
+            resp = c.post(reverse('login'), data=body, content_type='application/json')
+            self.assertEqual(resp.status_code, 400)
+        resp = c.post(reverse('login'), data=body, content_type='application/json')
+        self.assertEqual(resp.status_code, 429)
 
     def test_login_admin_bloqueado(self):
         User.objects.create_superuser('admin1', 'a@a.com', 'adm12345')

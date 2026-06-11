@@ -42,10 +42,20 @@ class Expedicao(models.Model):
 
     @property
     def vagas_disponiveis(self):
-        """Calcula vagas subtraindo as reservas confirmadas ou pendentes (ignora lista de espera)."""
-        reservas_ativas = self.reservas.exclude(status__in=['cancelada', 'lista_espera']).aggregate(
-            total=models.Sum('quantidade_pessoas')
-        )['total'] or 0
+        """Calcula vagas subtraindo as reservas confirmadas ou pendentes (ignora lista de espera).
+
+        Quando 'reservas' foi carregado via prefetch_related (listagens), soma em
+        Python para não disparar uma query extra por expedição (N+1).
+        """
+        inativas = ('cancelada', 'lista_espera')
+        if 'reservas' in getattr(self, '_prefetched_objects_cache', {}):
+            reservas_ativas = sum(
+                r.quantidade_pessoas for r in self.reservas.all() if r.status not in inativas
+            )
+        else:
+            reservas_ativas = self.reservas.exclude(status__in=inativas).aggregate(
+                total=models.Sum('quantidade_pessoas')
+            )['total'] or 0
         return self.vagas_totais - reservas_ativas
 
     @property

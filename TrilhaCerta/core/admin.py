@@ -50,8 +50,9 @@ class PagamentoAdmin(admin.ModelAdmin):
     list_display = ('id', 'reserva', 'metodo_pagamento', 'valor_total', 'status', 'criado_em')
     list_filter = ('status', 'metodo_pagamento', 'criado_em')
     search_fields = ('id', 'reserva__usuario__username', 'reserva__expedicao__titulo', 'gateway_id')
-    readonly_fields = ('id', 'criado_em', 'atualizado_em')
-    list_editable = ('status',)
+    # Status de pagamento muda apenas via webhook do gateway — edição manual no
+    # admin quebraria a consistência com a Reserva e não deixa trilha de auditoria.
+    readonly_fields = ('id', 'status', 'gateway_id', 'valor_total', 'criado_em', 'atualizado_em')
 
 @admin.register(FichaMedica)
 class FichaMedicaAdmin(admin.ModelAdmin):

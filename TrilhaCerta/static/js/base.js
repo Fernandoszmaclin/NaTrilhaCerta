@@ -82,12 +82,17 @@ function buildLightboxSlides(images) {
 
 // Popula o carrossel do modal de detalhe e mostra/esconde os controles.
 function setupDetailCarousel({ innerId, prevId, nextId, images }) {
+    const inner = document.getElementById(innerId);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    if (!inner || !prev || !next) return;
+
     const slides = images.filter(Boolean);
-    document.getElementById(innerId).innerHTML = buildLightboxSlides(slides);
+    inner.innerHTML = buildLightboxSlides(slides);
 
     const display = slides.length > 1 ? 'block' : 'none';
-    document.getElementById(prevId).style.display = display;
-    document.getElementById(nextId).style.display = display;
+    prev.style.display = display;
+    next.style.display = display;
 }
 
 // Aviso não-bloqueante (substitui alert). type: 'success' | 'danger' | 'info'

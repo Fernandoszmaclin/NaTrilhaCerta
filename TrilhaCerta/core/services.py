@@ -63,9 +63,10 @@ def criar_usuario(request, dados: dict) -> User:
 
 # ─────────────────────────────  Reservas / Checkout  ─────────────────────────────
 
-def _get_expedicao(expedicao_id: int) -> Expedicao:
+def _get_expedicao(expedicao_id: int, *, for_update: bool = False) -> Expedicao:
+    qs = Expedicao.objects.select_for_update() if for_update else Expedicao.objects
     try:
-        return Expedicao.objects.get(id=expedicao_id)
+        return qs.get(id=expedicao_id)
     except Expedicao.DoesNotExist as exc:
         raise DomainError('Expedição não encontrada.', status=404) from exc
 
@@ -75,10 +76,7 @@ def iniciar_checkout(usuario: User, expedicao_id: int, quantidade_pessoas: int) 
     with transaction.atomic():
         # Lock da linha da expedição evita overbooking sob concorrência:
         # a checagem de vagas e a criação da reserva ficam serializadas.
-        try:
-            expedicao = Expedicao.objects.select_for_update().get(id=expedicao_id)
-        except Expedicao.DoesNotExist as exc:
-            raise DomainError('Expedição não encontrada.', status=404) from exc
+        expedicao = _get_expedicao(expedicao_id, for_update=True)
 
         if expedicao.vagas_disponiveis < quantidade_pessoas:
             raise DomainError('Não há vagas suficientes. Tente entrar na lista de espera.')

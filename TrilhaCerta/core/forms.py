@@ -46,7 +46,7 @@ class ListaEsperaForm(forms.Form):
 
 
 class FichaMedicaForm(forms.Form):
-    nome_completo = forms.CharField(max_length=150, required=False)
+    nome_completo = forms.CharField(max_length=150)
     restricoes_alimentares = forms.CharField(required=False)
     tipo_sanguineo = forms.CharField(max_length=5, required=False)
     contato_emergencia = forms.CharField(max_length=255)

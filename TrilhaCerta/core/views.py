@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # ─────────────────────────────  Helpers  ─────────────────────────────
 
-def _payload(request) -> dict:
+def _parse_payload(request) -> dict:
     """Lê JSON body ou cai em form-encoded sem estourar exceção."""
     try:
         return json.loads(request.body or b'{}')
@@ -37,7 +37,7 @@ def _payload(request) -> dict:
         return request.POST.dict()
 
 
-def _form_error(form) -> str:
+def _first_form_error(form) -> str:
     """Pega a primeira mensagem de erro do form para retorno JSON."""
     for errors in form.errors.values():
         if errors:
@@ -45,28 +45,33 @@ def _form_error(form) -> str:
     return 'Dados inválidos.'
 
 
-def _domain_error(exc: DomainError, *, success_key: str = 'success') -> JsonResponse:
+def _domain_error_response(exc: DomainError, *, success_key: str = 'success') -> JsonResponse:
     return JsonResponse({success_key: False, 'message': exc.message}, status=exc.status)
 
 
-def _rate_limited(request, scope: str, *, limit: int = 10, window: int = 300) -> bool:
-    """Throttle simples por IP via cache. True = limite excedido.
+def _is_rate_limited(request, scope: str, *, limit: int = 10, window: int = 300) -> bool:
+    """Throttle por IP via cache compartilhado (janela fixa). True = limite excedido.
 
-    Mitiga brute force em endpoints sensíveis sem dependência externa.
-    Para múltiplos processos/instâncias, configure um CACHES compartilhado (Redis).
+    add/incr são atômicos nos backends compartilhados (Redis/DB), evitando que
+    requisições concorrentes leiam o mesmo contador. O TTL é definido apenas na
+    primeira tentativa — insistir não estende a janela de bloqueio.
     """
     ip = request.META.get('REMOTE_ADDR', 'desconhecido')
     key = f'ratelimit:{scope}:{ip}'
-    tentativas = cache.get(key, 0)
-    if tentativas >= limit:
-        return True
-    cache.set(key, tentativas + 1, window)
-    return False
+    if cache.add(key, 1, window):
+        return False
+    try:
+        tentativas = cache.incr(key)
+    except ValueError:
+        # Chave expirou entre o add e o incr — recomeça a janela.
+        cache.set(key, 1, window)
+        return False
+    return tentativas > limit
 
 
 # ─────────────────────────────  Páginas  ─────────────────────────────
 
-def home(request):
+def home_view(request):
     hoje = timezone.now().date()
     expedicoes = (
         Expedicao.objects
@@ -77,7 +82,7 @@ def home(request):
     return render(request, 'index.html', {'expedicoes': expedicoes})
 
 
-def expedicoes_lista(request):
+def expedicoes_view(request):
     hoje = timezone.now().date()
     expedicoes = (
         Expedicao.objects
@@ -88,7 +93,7 @@ def expedicoes_lista(request):
     return render(request, 'expedicoes.html', {'expedicoes': expedicoes})
 
 
-def contato(request):
+def contato_view(request):
     return render(request, 'contato.html')
 
 
@@ -96,18 +101,18 @@ def contato(request):
 
 @require_POST
 def login_view(request):
-    if _rate_limited(request, 'login', limit=10, window=300):
+    if _is_rate_limited(request, 'login', limit=10, window=300):
         return JsonResponse(
             {'success': False, 'message': 'Muitas tentativas. Tente novamente em alguns minutos.'},
             status=429,
         )
-    form = LoginForm(_payload(request))
+    form = LoginForm(_parse_payload(request))
     if not form.is_valid():
-        return JsonResponse({'success': False, 'message': _form_error(form)}, status=400)
+        return JsonResponse({'success': False, 'message': _first_form_error(form)}, status=400)
     try:
         user = services.autenticar_usuario(request, **form.cleaned_data)
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     return JsonResponse({
         'success': True,
         'message': f'Bem-vindo de volta, {user.first_name or user.username}!',
@@ -117,15 +122,18 @@ def login_view(request):
 
 @require_POST
 def signup_view(request):
-    if _rate_limited(request, 'signup', limit=10, window=3600):
+    if _is_rate_limited(request, 'signup', limit=10, window=3600):
         return JsonResponse(
             {'success': False, 'message': 'Muitas tentativas. Tente novamente mais tarde.'},
             status=429,
         )
-    form = SignupForm(_payload(request))
+    form = SignupForm(_parse_payload(request))
     if not form.is_valid():
-        return JsonResponse({'success': False, 'message': _form_error(form)}, status=400)
-    user = services.criar_usuario(request, form.cleaned_data)
+        return JsonResponse({'success': False, 'message': _first_form_error(form)}, status=400)
+    try:
+        user = services.criar_usuario(request, form.cleaned_data)
+    except DomainError as exc:
+        return _domain_error_response(exc)
     return JsonResponse({
         'success': True,
         'message': f'Conta criada com sucesso! Bem-vindo, {user.first_name}!',
@@ -144,13 +152,13 @@ def logout_view(request):
 @require_POST
 @login_required
 def checkout_view(request):
-    form = CheckoutForm(_payload(request))
+    form = CheckoutForm(_parse_payload(request))
     if not form.is_valid():
-        return JsonResponse({'success': False, 'message': _form_error(form)}, status=400)
+        return JsonResponse({'success': False, 'message': _first_form_error(form)}, status=400)
     try:
         pagamento = services.iniciar_checkout(request.user, **form.cleaned_data)
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     except Exception:
         logger.exception('Erro inesperado no checkout')
         return JsonResponse({'success': False, 'message': 'Erro interno.'}, status=500)
@@ -167,14 +175,14 @@ def checkout_view(request):
 
 @require_POST
 @login_required
-def entrar_lista_espera(request):
-    form = ListaEsperaForm(_payload(request))
+def lista_espera_view(request):
+    form = ListaEsperaForm(_parse_payload(request))
     if not form.is_valid():
-        return JsonResponse({'success': False, 'message': _form_error(form)}, status=400)
+        return JsonResponse({'success': False, 'message': _first_form_error(form)}, status=400)
     try:
         services.entrar_lista_espera(request.user, form.cleaned_data['expedicao_id'])
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     return JsonResponse({
         'success': True,
         'message': 'Sucesso! Você entrou na lista de espera. Avisaremos via e-mail se uma vaga for liberada.',
@@ -182,7 +190,7 @@ def entrar_lista_espera(request):
 
 
 @login_required
-def minhas_reservas(request):
+def minhas_reservas_view(request):
     reservas = (
         Reserva.objects
         .filter(usuario=request.user)
@@ -195,11 +203,11 @@ def minhas_reservas(request):
 
 @require_POST
 @login_required
-def cancelar_reserva(request, reserva_id):
+def cancelar_reserva_view(request, reserva_id):
     try:
         services.cancelar_reserva(request.user, reserva_id)
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     except Exception:
         logger.exception('Erro inesperado no cancelamento')
         return JsonResponse({'success': False, 'message': 'Erro interno.'}, status=500)
@@ -211,14 +219,14 @@ def cancelar_reserva(request, reserva_id):
 
 @require_POST
 @login_required
-def salvar_ficha_medica(request, reserva_id):
-    form = FichaMedicaForm(_payload(request))
+def salvar_ficha_medica_view(request, reserva_id):
+    form = FichaMedicaForm(_parse_payload(request))
     if not form.is_valid():
-        return JsonResponse({'success': False, 'message': _form_error(form)}, status=400)
+        return JsonResponse({'success': False, 'message': _first_form_error(form)}, status=400)
     try:
         services.salvar_ficha_medica(request.user, reserva_id, form.cleaned_data)
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     except Exception:
         logger.exception('Erro inesperado ao salvar ficha médica')
         return JsonResponse({'success': False, 'message': 'Erro interno.'}, status=500)
@@ -232,7 +240,7 @@ def salvar_ficha_medica(request, reserva_id):
 
 @csrf_exempt
 @require_POST
-def webhook_pagamento(request):
+def webhook_pagamento_view(request):
     """Webhook do gateway: valida assinatura HMAC quando PAYMENT_WEBHOOK_SECRET está setado."""
     secret = getattr(settings, 'PAYMENT_WEBHOOK_SECRET', '')
     if not secret:
@@ -261,7 +269,7 @@ def webhook_pagamento(request):
     try:
         services.processar_webhook_pagamento(gateway_id, novo_status)
     except DomainError as exc:
-        return _domain_error(exc)
+        return _domain_error_response(exc)
     except Exception:
         logger.exception('Erro inesperado no webhook')
         return JsonResponse({'success': False, 'message': 'Erro interno.'}, status=500)

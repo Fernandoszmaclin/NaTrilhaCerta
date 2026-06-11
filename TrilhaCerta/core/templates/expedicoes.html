@@ -55,38 +55,12 @@
     .diff-dificil { background: rgba(255,106,0,0.15); color: var(--cor-primaria); }
     .diff-extremo { background: rgba(244,67,54,0.15); color: #ef5350; }
 
-    .empty-state { text-align: center; padding: 80px 0; }
-    .empty-state i { font-size: 4rem; color: var(--cor-cinza); margin-bottom: 20px; }
-
-    /* Detail Modal */
-    .detail-modal .modal-content {
-        background: rgba(26,26,26,0.98); border: 1px solid var(--cor-cinza);
-        border-radius: 16px; backdrop-filter: blur(20px); overflow: hidden;
-    }
-    .detail-hero { position: relative; height: 280px; overflow: hidden; }
-    .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
-    .detail-hero-overlay {
-        position: absolute; bottom: 0; left: 0; right: 0;
-        background: linear-gradient(transparent, rgba(26,26,26,0.95));
-        padding: 30px 30px 20px;
-    }
-    .detail-hero-overlay h3 { font-size: 1.6rem; font-weight: 800; color: white; margin: 0; }
-    .detail-body { padding: 24px 30px 30px; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .detail-item {
-        background: var(--cor-cinza); border-radius: 10px; padding: 14px 16px;
-        display: flex; align-items: center; gap: 12px;
-    }
-    .detail-item i { font-size: 1.3rem; color: var(--cor-secundaria); }
-    .detail-item .detail-label { font-size: 0.7rem; color: var(--texto-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .detail-item .detail-value { font-size: 0.95rem; color: white; font-weight: 600; }
-    .detail-desc { color: var(--texto-claro); font-size: 0.95rem; line-height: 1.7; margin-bottom: 24px; }
+    /* Detail Modal e .empty-state: estilos compartilhados em base.css */
 
     @media (max-width: 768px) {
-        .detail-grid { grid-template-columns: 1fr; }
-        .detail-hero { height: 200px; }
         .page-header h1 { font-size: 2.2rem; }
-        .page-header { padding: 120px 0 60px; }
+        /* 140px+ para o título não ficar sob a navbar fixa (margin-top -140px acima) */
+        .page-header { padding: 150px 0 60px; }
     }
 
     /* Filtros e Ordenação */
@@ -355,9 +329,9 @@
                 <div class="mb-4">
                     <label class="form-label text-light small fw-bold">Quantos Pilotos?</label>
                     <div class="input-group">
-                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdMinus" style="width: 40px;">-</button>
+                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdMinus" aria-label="Diminuir quantidade" style="width: 48px; min-height: 48px;">-</button>
                         <input type="number" id="inputQtdPilotos" class="form-control bg-dark text-white text-center border-secondary fw-bold fs-5" value="1" min="1" max="10" readonly>
-                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdPlus" style="width: 40px;">+</button>
+                        <button class="btn btn-outline-secondary text-white fw-bold" type="button" id="btnQtdPlus" aria-label="Aumentar quantidade" style="width: 48px; min-height: 48px;">+</button>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -400,7 +374,7 @@
             <div class="modal-body text-center">
                 <p class="text-light mb-4">Escaneie o QR Code abaixo no app do seu banco para garantir sua vaga.</p>
                 <div class="bg-white p-3 rounded-3 d-inline-block mb-3">
-                    <img id="pixQrCodeImg" src="" alt="QR Code PIX">
+                    <img id="pixQrCodeImg" src="" alt="QR Code PIX" width="200" height="200" style="max-width: 100%; height: auto;">
                 </div>
                 <h4 class="text-white fw-bold mb-3" id="pixValorTotal">R$ 0,00</h4>
                 <div class="input-group mb-3 px-3">
@@ -457,16 +431,16 @@
     document.getElementById('btnMaisInfos').addEventListener('click', function() {
         const titulo = this.dataset.titulo;
         const texto = encodeURIComponent(`Olá! Gostaria de mais informações sobre a expedição: ${titulo}`);
-        const url = `https://api.whatsapp.com/send/?phone=555497145614&text=${texto}&type=phone_number&app_absent=0&utm_source=ig`;
+        const url = `https://wa.me/555497145614?text=${texto}`;
         window.open(url, '_blank');
     });
 
-    let precoBaseCheckout = 0;
-    let expedicaoIdCheckout = null;
+    let checkoutBasePrice = 0;
+    let checkoutExpedicaoId = null;
 
-    function atualizarTotalCheckout() {
+    function updateCheckoutTotal() {
         const qtd = parseInt(document.getElementById('inputQtdPilotos').value);
-        const total = precoBaseCheckout * qtd;
+        const total = checkoutBasePrice * qtd;
         document.getElementById('checkoutTotalValue').textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
@@ -475,7 +449,7 @@
         let val = parseInt(input.value);
         if(val > 1) {
             input.value = val - 1;
-            atualizarTotalCheckout();
+            updateCheckoutTotal();
         }
     });
 
@@ -484,7 +458,7 @@
         let val = parseInt(input.value);
         if(val < 10) {
             input.value = val + 1;
-            atualizarTotalCheckout();
+            updateCheckoutTotal();
         }
     });
 
@@ -496,10 +470,10 @@
             new bootstrap.Modal(document.getElementById('authModal')).show();
         } else {
             // Setup Checkout Modal
-            precoBaseCheckout = parseFloat(this.dataset.preco);
-            expedicaoIdCheckout = this.dataset.id;
+            checkoutBasePrice = parseFloat(this.dataset.preco);
+            checkoutExpedicaoId = this.dataset.id;
             document.getElementById('inputQtdPilotos').value = 1;
-            atualizarTotalCheckout();
+            updateCheckoutTotal();
             
             const detailModalEl = document.getElementById('detailModal');
             bootstrap.Modal.getInstance(detailModalEl).hide();
@@ -523,7 +497,7 @@
                 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({
-                expedicao_id: expedicaoIdCheckout,
+                expedicao_id: checkoutExpedicaoId,
                 quantidade_pessoas: qtdPessoas
             })
         })
@@ -552,11 +526,26 @@
         });
     });
 
-    document.getElementById('btnCopiarPix').addEventListener('click', function() {
+    document.getElementById('btnCopiarPix').addEventListener('click', async function() {
         const copyText = document.getElementById('pixCopiaCola');
         copyText.select();
         copyText.setSelectionRange(0, 99999); // Para mobile
-        navigator.clipboard.writeText(copyText.value);
+
+        // navigator.clipboard só existe em HTTPS; fallback via execCommand cobre o resto.
+        let copiou = false;
+        try {
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(copyText.value);
+                copiou = true;
+            }
+        } catch (e) { /* cai no fallback */ }
+        if (!copiou) {
+            copiou = document.execCommand('copy');
+        }
+        if (!copiou) {
+            showToast('Não foi possível copiar automaticamente. Selecione o código e copie manualmente.', 'danger');
+            return;
+        }
 
         const originalText = this.innerHTML;
         this.innerHTML = '<i class="bi bi-check"></i> Copiado!';

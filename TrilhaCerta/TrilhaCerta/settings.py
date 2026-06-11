@@ -69,6 +69,18 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 
+# Produção (HTTPS obrigatório): cookies só trafegam cifrados e o site é
+# redirecionado para HTTPS. Sem isso, sessão/CSRF vazam em Wi-Fi aberto.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = _env_bool('DJANGO_SSL_REDIRECT', True)
+    # 30 dias; suba para 31536000 (1 ano) após confirmar que todo o site roda em HTTPS.
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', 2592000))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # Necessário atrás de proxy/load balancer que termina o TLS (ex.: nginx, Railway, Render).
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
@@ -174,7 +186,38 @@ LOGIN_URL = '/'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 2592000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True
+# False: só grava a sessão quando ela muda (True geraria um write no banco a cada request).
+SESSION_SAVE_EVERY_REQUEST = False
+
+
+# Cache — o rate limiting (views._rate_limited) depende de um cache COMPARTILHADO
+# entre os workers. Com LocMem cada processo do gunicorn tem contador próprio,
+# multiplicando o limite efetivo pelo nº de workers.
+#   - REDIS_URL definida  → Redis (recomendado em produção; requer pacote 'redis').
+#   - produção sem Redis  → cache no banco (rode: manage.py createcachetable).
+#   - desenvolvimento     → LocMem (processo único do runserver, suficiente).
+_REDIS_URL = os.environ.get('REDIS_URL', '')
+
+if _REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _REDIS_URL,
+        }
+    }
+elif not DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache',
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 
 # Webhook do gateway de pagamento — segredo HMAC para validação de assinatura.

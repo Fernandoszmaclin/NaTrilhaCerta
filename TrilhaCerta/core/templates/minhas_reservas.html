@@ -96,11 +96,7 @@
         border-color: #ef5350;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 80px 0;
-    }
-    .empty-state i { font-size: 4rem; color: var(--cor-cinza); margin-bottom: 20px; }
+    /* .empty-state: compartilhado em base.css */
 </style>
 
 <section class="reserva-header">
@@ -157,8 +153,8 @@
                                 <button class="btn btn-outline-amarelo flex-grow-1 flex-md-grow-0" disabled title="Em breve">Finalizar Pagamento</button>
                                 {% endif %}
                                 
-                                {% if reserva.status in 'pendente,confirmada,confirmada_e_pronta,lista_espera' %}
-                                <button class="btn btn-cancelar flex-grow-1 flex-md-grow-0 btn-cancelar-ação" data-id="{{ reserva.id }}" data-titulo="{{ reserva.expedicao.titulo }}">
+                                {% if reserva.status != 'cancelada' and reserva.status != 'concluida' %}
+                                <button class="btn btn-cancelar flex-grow-1 flex-md-grow-0 btn-cancelar-reserva" data-id="{{ reserva.id }}" data-titulo="{{ reserva.expedicao.titulo }}">
                                     Cancelar Reserva
                                 </button>
                                 {% endif %}
@@ -249,30 +245,28 @@
 </div>
 
 <script>
-    let reservaIdParaCancelar = null;
+    let selectedReservaId = null;
 
-    document.querySelectorAll('.btn-cancelar-ação').forEach(btn => {
+    document.querySelectorAll('.btn-cancelar-reserva').forEach(btn => {
         btn.addEventListener('click', function() {
-            reservaIdParaCancelar = this.dataset.id;
+            selectedReservaId = this.dataset.id;
             document.getElementById('cancelTitulo').textContent = this.dataset.titulo;
             new bootstrap.Modal(document.getElementById('cancelModal')).show();
         });
     });
 
     document.getElementById('btnConfirmarCancelamento').addEventListener('click', function() {
-        if(!reservaIdParaCancelar) return;
+        if(!selectedReservaId) return;
 
         const btn = this;
         const originalText = btn.innerHTML;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cancelando...';
         btn.disabled = true;
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        fetch(`/api/v1/reservas/${reservaIdParaCancelar}/cancelar/`, {
+        fetch(`/api/v1/reservas/${selectedReservaId}/cancelar/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': csrfToken,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             }
         })
@@ -313,8 +307,7 @@
         btn.disabled = true;
 
         const reservaId = document.getElementById('fichaReservaId').value;
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
+
         const payload = {
             nome_completo: document.getElementById('fichaNome').value,
             tipo_sanguineo: document.getElementById('fichaSangue').value,
@@ -325,7 +318,7 @@
         fetch(`/api/v1/reservas/${reservaId}/ficha-medica/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': csrfToken,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)

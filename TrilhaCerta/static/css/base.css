@@ -73,6 +73,26 @@ h1, h2, h3, h4, h5, h6,
     transition: transform 0.3s ease;
 }
 
+/* Mobile: logo menor — com 85px a navbar fixa chega a ~117px de altura,
+   ocupando 1/3 da tela e encobrindo os títulos das páginas. */
+@media (max-width: 991.98px) {
+    .navbar-brand img {
+        height: 56px;
+    }
+
+    .navbar-custom {
+        padding: 10px 0;
+    }
+}
+
+/* Bootstrap 5 não traz utilitários de largura responsivos (w-md-auto não
+   existe no framework) — os templates usam, então definimos aqui. */
+@media (min-width: 768px) {
+    .w-md-auto {
+        width: auto !important;
+    }
+}
+
 .navbar-brand:hover img {
     transform: scale(1.05);
 }
@@ -382,10 +402,114 @@ main {
     cursor: zoom-in;
 }
 
-/* Toasts (avisos) */
+/* Modal de detalhe da expedição (compartilhado por index e expedições) */
+.detail-modal .modal-content {
+    background: rgba(26, 26, 26, 0.98);
+    border: 1px solid var(--cor-cinza);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+}
+
+.detail-hero {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+
+    & img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.detail-hero-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(26, 26, 26, 0.95));
+    padding: 30px 30px 20px;
+
+    & h3 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+    }
+}
+
+.detail-body {
+    padding: 24px 30px 30px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    background: var(--cor-cinza);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    & i {
+        font-size: 1.3rem;
+        color: var(--cor-secundaria);
+    }
+
+    & .detail-label {
+        font-size: 0.7rem;
+        color: var(--texto-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    & .detail-value {
+        font-size: 0.95rem;
+        color: white;
+        font-weight: 600;
+    }
+}
+
+.detail-desc {
+    color: var(--texto-claro);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-hero {
+        height: 200px;
+    }
+}
+
+/* Estado vazio (listas sem itens) — compartilhado por expedições e reservas */
+.empty-state {
+    text-align: center;
+    padding: 80px 0;
+
+    & i {
+        font-size: 4rem;
+        color: var(--cor-cinza);
+        margin-bottom: 20px;
+    }
+}
+
+/* Toasts (avisos) — respeita a safe area (home indicator do iPhone) */
 .toast-stack {
     position: fixed;
-    bottom: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     right: 20px;
     z-index: 3000;
     display: flex;
@@ -435,6 +559,26 @@ main {
             animation: bg-parallax linear both;
             animation-timeline: view();
         }
+    }
+}
+
+/* Touch: sem hover real, o "lift" de :hover fica preso no card após o toque
+   (sticky hover) e exige um segundo toque em alguns navegadores. Desliga os
+   transforms de hover, mantendo os fades de cor. */
+@media (hover: none) {
+    .btn-primario:hover,
+    .btn-outline-amarelo:hover,
+    .btn-outline-verde:hover,
+    .social-icons a:hover,
+    .feature-box:hover,
+    .expedicao-card:hover,
+    .exp-card:hover,
+    .contato-card:hover,
+    .reserva-card:hover,
+    .navbar-brand:hover img,
+    .expedicao-card:hover .expedicao-img,
+    .exp-card:hover .exp-card-img img {
+        transform: none !important;
     }
 }
 
