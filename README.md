@@ -44,12 +44,6 @@ As expedições da Na Trilha Certa combinam **adrenalina extrema** com **seguran
 - **Lista de espera** automática quando uma expedição esgota
 - **Cancelamento com estorno** processado automaticamente via webhook do gateway
 
-### Para a operação
-- **Painel administrativo** (Django Admin) para gestão de expedições, imagens, reservas e fichas médicas
-- **Webhook seguro** (HMAC-SHA256) para receber confirmações do gateway de pagamento
-- **Rate limiting** por IP em todos os endpoints críticos (login, cadastro, checkout)
-- **Cache compartilhado** configurável: Redis (produção) → DatabaseCache (fallback multi-worker) → LocMem (dev)
-
 ---
 
 ## Stack Técnica
@@ -104,29 +98,6 @@ Acesse `http://localhost:8000` — o Admin fica em `http://localhost:8000/admin/
 
 ---
 
-## Estrutura do Projeto
-
-```
-NaTrilhaCerta/
-├── TrilhaCerta/
-│   ├── core/
-│   │   ├── models.py        # Expedição, Reserva, Pagamento, FichaMedica
-│   │   ├── views.py         # Views finas — só parsing e tradução de erros
-│   │   ├── services.py      # Regras de negócio (checkout, cancelamento, webhook)
-│   │   ├── forms.py         # Validação de entrada
-│   │   ├── urls.py          # Roteamento da aplicação e API v1
-│   │   ├── admin.py         # Painel administrativo customizado
-│   │   └── templates/       # HTML (Django Templates + Bootstrap 5)
-│   ├── static/
-│   │   ├── css/base.css     # Design system, glassmorphism, utilitários mobile
-│   │   └── js/base.js       # Carrossel, lightbox, toasts, clipboard
-│   └── TrilhaCerta/
-│       └── settings.py      # Configuração por ambiente (dev/prod)
-├── .env.example             # Variáveis de ambiente documentadas
-└── Pipfile                  # Dependências do projeto
-```
-
----
 
 ## Redes Sociais
 
